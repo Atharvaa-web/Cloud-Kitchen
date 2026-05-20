@@ -623,14 +623,12 @@ class KitchenHandler(BaseHTTPRequestHandler):
     parsed = urlparse(self.path)
     path = parsed.path.rstrip("/")
 
-    # ─────────────────────────────────────────
-    # FRONTEND ROUTES
-    # ─────────────────────────────────────────
+            # FRONTEND ROUTES
 
     if path == "":
         path = "/"
 
-    # Serve index.html
+    # Serve homepage
     if path == "/":
         try:
             with open("../frontend/index.html", "rb") as file:
@@ -652,11 +650,11 @@ class KitchenHandler(BaseHTTPRequestHandler):
             }, 500)
             return
 
-    # Serve CSS / JS / Images / Static Files
+            # Serve static files
     try:
         static_extensions = (
-            ".css", ".js", ".png", ".jpg", ".jpeg",
-            ".gif", ".svg", ".ico", ".json"
+            ".css", ".js", ".png", ".jpg",
+            ".jpeg", ".gif", ".svg", ".ico"
         )
 
         if path.endswith(static_extensions):
@@ -689,9 +687,6 @@ class KitchenHandler(BaseHTTPRequestHandler):
             elif path.endswith(".ico"):
                 content_type = "image/x-icon"
 
-            elif path.endswith(".json"):
-                content_type = "application/json"
-
             self.send_response(200)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(content)))
@@ -704,9 +699,7 @@ class KitchenHandler(BaseHTTPRequestHandler):
     except Exception:
         pass
 
-    # ─────────────────────────────────────────
     # API ROUTES
-    # ─────────────────────────────────────────
 
     if path == "/api/ping":
         json_response(self, {
@@ -768,7 +761,6 @@ class KitchenHandler(BaseHTTPRequestHandler):
         return
 
     json_response(self, {"error": "Not found"}, 404)
-
 
     def do_POST(self):
         parsed = urlparse(self.path)
