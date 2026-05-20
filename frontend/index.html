@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Kitchen — Neural Ops</title>
+<style>
+/* ═══════════════════════════════════════
+   ROOT VARIABLES
+═══════════════════════════════════════ */
+:root {
+  --bg: #060810;
+  --bg2: #0d0f1a;
+  --surface: #111420;
+  --surface2: #181c2e;
+  --surface3: #1f2438;
+  --border: #252a42;
+  --border2: #313859;
+  --border3: #3d4570;
+  --text: #e2e8ff;
+  --text2: #7b84b0;
+  --text3: #454d6e;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --accent3: #a5b4fc;
+  --cyan: #06b6d4;
+  --cyan2: #22d3ee;
+  --green: #10b981;
+  --green2: #34d399;
+  --amber: #f59e0b;
+  --amber2: #fbbf24;
+  --red: #ef4444;
+  --red2: #f87171;
+  --purple: #8b5cf6;
+  --pink: #ec4899;
+  --orange: #f97316;
+  --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --r: 14px;
+  --r2: 10px;
+  --r3: 6px;
+}
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════
+   FUTURISTIC BACKGROUND CANVAS
+═══════════════════════════════════════ */
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+  animation: orb-float 15s ease-in-out infinite alternate;
+}
+.orb-1 { width:700px;height:700px;background:rgba(99,102,241,0.07);top:-250px;left:-200px; }
+.orb-2 { width:500px;height:500px;background:rgba(6,182,212,0.05);bottom:0;right:-100px;animation-delay:-6s; }
+.orb-3 { width:400px;height:400px;background:rgba(139,92,246,0.06);top:40%;left:40%;animation-delay:-11s; }
+
+@keyframes orb-float {
+  from { transform:translate(0,0) scale(1); }
+  to   { transform:translate(40px,30px) scale(1.1); }
+}
+
+/* grid overlay */
+.grid-overlay {
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ═══════════════════════════════════════
+   CURSOR GLOW
+═══════════════════════════════════════ */
+#cursor-glow {
+  position:fixed;width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
+  pointer-events:none;z-index:1;
+  transform:translate(-50%,-50%);
+  transition:left 0.08s,top 0.08s;
+}
+
+/* ═══════════════════════════════════════
+   SCROLLING FOOD PARTICLES (3D BG)
+═══════════════════════════════════════ */
+.food-particle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  font-size: 28px;
+  opacity: 0.06;
+  animation: food-float linear infinite;
+  filter: blur(0.5px);
+  will-change: transform;
+}
+
+@keyframes food-float {
+  0%   { transform: translateY(110vh) rotate(0deg) scale(0.8); opacity:0; }
+  5%   { opacity: 0.06; }
+  95%  { opacity: 0.06; }
+  100% { transform: translateY(-20vh) rotate(720deg) scale(1.2); opacity:0; }
+}
+
+/* ═══════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════ */
+#app { position:relative;z-index:2; }
+
+/* ═══════════════════════════════════════
+   NAVBAR
+═══════════════════════════════════════ */
+nav {
+  position: sticky;top:0;z-index:200;
+  display: flex;align-items:center;justify-content:space-between;
+  padding: 0 28px;height: 64px;
+  background: rgba(6,8,16,0.85);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.nav-logo {
+  display:flex;align-items:center;gap:12px;
+  font-size:17px;font-weight:800;letter-spacing:-0.5px;
+  background: linear-gradient(135deg, var(--accent2), var(--cyan));
+  -webkit-background-clip: text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.nav-logo-icon {
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--cyan));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  box-shadow:0 0 20px rgba(99,102,241,0.4);
+  animation: logo-pulse 3s ease-in-out infinite;
+}
+
+@keyframes logo-pulse {
+  0%,100% { box-shadow:0 0 20px rgba(99,102,241,0.4); }
+  50%      { box-shadow:0 0 35px rgba(99,102,241,0.7); }
+}
+
+.nav-links {
+  display:flex;align-items:center;gap:6px;
+}
+
+.nav-link {
+  padding:7px 14px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--text2);
+  cursor:pointer;border:none;background:transparent;
+  font-family:var(--font);
+  transition:all 0.2s;
+}
+.nav-link:hover { color:var(--text);background:var(--surface2); }
+.nav-link.active { color:var(--accent2);background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.2); }
+
+/* Orders history nav button — special */
+.nav-orders-btn {
+  padding:7px 16px;border-radius:8px;
+  font-size:13px;font-weight:600;
+  background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(6,182,212,0.15));
+  border:1px solid rgba(99,102,241,0.3);
+  color:var(--accent3);cursor:pointer;
+  font-family:var(--font);
+  transition:all 0.2s;
+  display:flex;align-items:center;gap:6px;
+  position:relative;
+}
+.nav-orders-btn:hover {
+  background:linear-gradient(135deg,rgba(99,102,241,0.3),rgba(6,182,212,0.25));
+  border-color:rgba(99,102,241,0.5);
+  box-shadow:0 0 20px rgba(99,102,241,0.2);
+  transform:translateY(-1px);
+}
+
+.nav-badge {
+  background:var(--accent);color:white;
+  font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:10px;
+  min-width:18px;text-align:center;
+}
+
+.nav-right { display:flex;align-items:center;gap:12px; }
+
+.live-indicator {
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--green2);font-weight:500;
+}
+.live-dot {
+  width:8px;height:8px;border-radius:50%;background:var(--green);
+  animation:live-pulse 2s ease-in-out infinite;
+  box-shadow:0 0 8px var(--green);
+}
+@keyframes live-pulse {
+  0%,100%{transform:scale(1);opacity:1;}
+  50%{transform:scale(0.7);opacity:0.5;}
+}
+
+.clock {
+  font-family:var(--mono);font-size:13px;
+  color:var(--text2);font-variant-numeric:tabular-nums;
+  background:var(--surface2);padding:5px 10px;border-radius:6px;
+  border:1px solid var(--border);
+}
+
+/* ═══════════════════════════════════════
+   PAGES
+═══════════════════════════════════════ */
+.page { display:none; }
+.page.active { display:block; }
+
+/* ═══════════════════════════════════════
+   RISK BANNER
+═══════════════════════════════════════ */
+.risk-banner {
+  margin:20px 28px 0;
+  background:linear-gradient(135deg,rgba(239,68,68,0.1),rgba(249,115,22,0.08));
+  border:1px solid rgba(239,68,68,0.3);
+  border-radius:var(--r);
+  padding:14px 20px;
+  display:flex;align-items:center;gap:12px;
+  font-size:13px;color:#fca5a5;
+  animation:banner-in 0.3s ease;
+}
+.risk-banner.hidden { display:none; }
+@keyframes banner-in {
+  from{opacity:0;transform:translateY(-8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ═══════════════════════════════════════
+   MAIN GRID
+═══════════════════════════════════════ */
+.main-grid {
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:20px;
+  padding:24px 28px 60px;
+}
+@media(max-width:1100px){
+  .main-grid{grid-template-columns:1fr;}
+  .sidebar{order:-1;}
+}
+
+/* ═══════════════════════════════════════
+   SECTION LABELS
+═══════════════════════════════════════ */
+.section-label {
+  font-size:11px;font-weight:700;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text3);
+  display:flex;align-items:center;gap:8px;margin-bottom:14px;
+}
+.section-label::after {
+  content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);
+}
+
+/* ═══════════════════════════════════════
+   AGENT STATUS BAR
+═══════════════════════════════════════ */
+.agent-bar {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:22px;
+}
+
+.agent-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:12px 14px;
+  position:relative;overflow:hidden;
+  transition:all 0.3s;
+  cursor:default;
+}
+.agent-card::before {
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--agent-color, rgba(99,102,241,0.1)),transparent 60%);
+  opacity:0;transition:opacity 0.3s;
+}
+.agent-card:hover::before { opacity:1; }
+.agent-card:hover {
+  border-color:var(--agent-color-border, var(--border2));
+  transform:translateY(-2px);
+  box-shadow:0 8px 30px rgba(0,0,0,0.3);
+}
+
+.agent-card[data-agent="boss"]   { --agent-color:rgba(139,92,246,0.12);--agent-color-border:rgba(139,92,246,0.4); }
+.agent-card[data-agent="order"]  { --agent-color:rgba(6,182,212,0.12);--agent-color-border:rgba(6,182,212,0.4); }
+.agent-card[data-agent="sched"]  { --agent-color:rgba(245,158,11,0.12);--agent-color-border:rgba(245,158,11,0.4); }
+.agent-card[data-agent="pack"]   { --agent-color:rgba(16,185,129,0.12);--agent-color-border:rgba(16,185,129,0.4); }
+
+.agent-icon {
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;margin-bottom:8px;
+}
+.agent-card[data-agent="boss"] .agent-icon  { background:rgba(139,92,246,0.2); }
+.agent-card[data-agent="order"] .agent-icon { background:rgba(6,182,212,0.2); }
+.agent-card[data-agent="sched"] .agent-icon { background:rgba(245,158,11,0.2); }
+.agent-card[data-agent="pack"] .agent-icon  { background:rgba(16,185,129,0.2); }
+
+.agent-name { font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px; }
+.agent-status { font-size:11px;color:var(--text3); }
+.agent-pulse {
+  position:absolute;top:12px;right:12px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green);
+  animation:live-pulse 2s ease-in-out infinite;
+  box-shadow:0 0 8px var(--green);
+}
+
+/* ═══════════════════════════════════════
+   STATION CARDS — 3D
+═══════════════════════════════════════ */
+.stations-grid {
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:14px;margin-bottom:24px;
+}
+
+.station-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:18px;
+  position:relative;overflow:hidden;
+  transition:transform 0.25s cubic-bezier(.34,1.56,.64,1),
+             border-color 0.2s, box-shadow 0.2s;
+  transform-style:preserve-3d;
+  cursor:default;
+}
+
+.station-card::before {
+  content:'';position:absolute;inset:0;pointer-events:none;
+  transition:opacity 0.3s;opacity:0.7;
+}
+.station-card[data-station="tandoor"]::before   { background:radial-gradient(ellipse at top left, rgba(239,68,68,0.12), transparent 60%); }
+.station-card[data-station="burner"]::before    { background:radial-gradient(ellipse at top left, rgba(245,158,11,0.12), transparent 60%); }
+.station-card[data-station="fryer"]::before     { background:radial-gradient(ellipse at top left, rgba(249,115,22,0.12), transparent 60%); }
+.station-card[data-station="cold_station"]::before { background:radial-gradient(ellipse at top left, rgba(6,182,212,0.12), transparent 60%); }
+
+.station-card:hover {
+  transform:perspective(600px) rotateX(4deg) rotateY(-2deg) translateY(-4px);
+  box-shadow:0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.15);
+}
+
+.station-card.busy {
+  border-color:rgba(99,102,241,0.35);
+  box-shadow:0 0 0 1px rgba(99,102,241,0.15), 0 8px 30px rgba(0,0,0,0.3);
+}
+
+.station-header {
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
+}
+.station-info { display:flex;align-items:center;gap:10px; }
+.station-emoji { font-size:22px; }
+.station-name { font-size:14px;font-weight:700;color:var(--text); }
+.station-sub  { font-size:11px;color:var(--text3);margin-top:1px; }
+
+.cap-dots { display:flex;gap:4px; }
+.cap-dot {
+  width:8px;height:8px;border-radius:50%;
+  background:var(--border);
+  transition:background 0.3s,box-shadow 0.3s;
+}
+.cap-dot.active {
+  background:var(--accent2);
+  box-shadow:0 0 8px rgba(99,102,241,0.6);
+  animation:dot-pulse 1.5s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:0.6;transform:scale(0.8);}
+}
+
+/* progress bar inside station item */
+.station-items { display:flex;flex-direction:column;gap:7px;margin-top:8px; }
+
+.station-item {
+  display:flex;align-items:center;gap:8px;
+  padding:9px 11px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  font-size:12px;position:relative;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.station-item.cooking {
+  border-color:rgba(99,102,241,0.3);
+  background:rgba(99,102,241,0.06);
+}
+
+.station-item-progress {
+  position:absolute;left:0;top:0;bottom:0;
+  border-radius:8px 0 0 8px;
+  background:linear-gradient(90deg,rgba(99,102,241,0.15),transparent);
+  transition:width 0.8s ease;
+  pointer-events:none;
+}
+
+.item-dot {
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+}
+.item-dot.cooking { background:var(--accent2);animation:dot-pulse 1.5s infinite; }
+.item-dot.queued  { background:var(--text3); }
+
+.item-name { flex:1;color:var(--text);font-weight:500;z-index:1;position:relative; }
+.item-cust { color:var(--text3);font-size:10px;z-index:1;position:relative; }
+.item-mins { color:var(--text2);font-size:11px;white-space:nowrap;z-index:1;position:relative; }
+
+.station-idle {
+  text-align:center;padding:18px;
+  color:var(--text3);font-size:12px;
+}
+
+/* ═══════════════════════════════════════
+   ORDER CARDS
+═══════════════════════════════════════ */
+.order-filters {
+  display:flex;gap:6px;margin-bottom:14px;
+}
+.filter-pill {
+  padding:5px 14px;border-radius:20px;
+  font-size:12px;font-weight:500;
+  border:1px solid var(--border);
+  background:transparent;color:var(--text2);
+  font-family:var(--font);cursor:pointer;
+  transition:all 0.15s;
+}
+.filter-pill:hover { border-color:var(--border2);color:var(--text); }
+.filter-pill.active {
+  background:rgba(99,102,241,0.12);
+  border-color:rgba(99,102,241,0.4);
+  color:var(--accent2);
+}
+
+.order-list { display:flex;flex-direction:column;gap:12px; }
+
+.order-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:16px 18px;
+  position:relative;overflow:hidden;
+  transition:border-color 0.2s,box-shadow 0.2s,transform 0.2s;
+  animation:card-appear 0.35s ease backwards;
+}
+@keyframes card-appear {
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.order-card:hover {
+  border-color:var(--border2);
+  box-shadow:0 6px 24px rgba(0,0,0,0.35);
+  transform:translateY(-1px);
+}
+.order-card.at-risk {
+  border-color:rgba(239,68,68,0.35);
+  background:rgba(239,68,68,0.03);
+}
+.order-card.at-risk::after {
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--red),var(--orange));
+  border-radius:var(--r) 0 0 var(--r);
+}
+.order-card.packing {
+  border-color:rgba(16,185,129,0.35);
+  background:rgba(16,185,129,0.03);
+}
+.order-card.packing::after {
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--green),var(--cyan));
+  border-radius:var(--r) 0 0 var(--r);
+}
+.order-card.completed { opacity:0.4; }
+
+/* status indicator line at top */
+.order-card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.order-card:hover::before { opacity:0.5; }
+
+.order-top { display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px; }
+
+.order-id-row { display:flex;align-items:center;gap:8px;margin-bottom:4px; }
+.order-id { font-size:11px;font-weight:700;color:var(--accent2);font-family:var(--mono); }
+
+.badge {
+  font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;
+  text-transform:uppercase;letter-spacing:0.05em;
+}
+.badge-risk    { background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;animation:badge-flash 2s infinite; }
+.badge-packing { background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7; }
+.badge-done    { background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:var(--accent3); }
+.badge-accepted{ background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:var(--cyan2); }
+
+@keyframes badge-flash {
+  0%,100%{opacity:1;}50%{opacity:0.6;}
+}
+
+.order-customer { font-size:15px;font-weight:700;color:var(--text); }
+.order-meta {
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;color:var(--text3);margin-top:4px;margin-bottom:12px;
+}
+.zone-tag {
+  padding:2px 8px;border-radius:4px;
+  background:var(--surface2);border:1px solid var(--border);
+  font-size:10px;font-weight:700;color:var(--text2);
+  text-transform:uppercase;
+}
+
+.order-eta { text-align:right;flex-shrink:0; }
+.eta-label { font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px; }
+.eta-value {
+  font-size:20px;font-weight:800;
+  font-variant-numeric:tabular-nums;
+  color:var(--text);line-height:1;
+  font-family:var(--mono);
+}
+.eta-value.risk   { color:var(--red); }
+.eta-value.urgent { color:var(--amber); }
+.eta-clock { font-size:10px;color:var(--text3);margin-top:2px; }
+
+/* deadline progress */
+.deadline-track {
+  height:3px;background:var(--border);
+  border-radius:2px;overflow:hidden;margin-bottom:12px;
+}
+.deadline-fill {
+  height:100%;border-radius:2px;
+  transition:width 1s linear;
+}
+
+/* order items inside card */
+.oi-list { display:flex;flex-direction:column;gap:5px; }
+.oi-row  { display:flex;align-items:center;gap:8px;font-size:12px; }
+
+.oi-icon {
+  width:22px;height:22px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;flex-shrink:0;font-weight:700;
+}
+.oi-icon.queued  { background:var(--surface2);border:1px solid var(--border);color:var(--text3); }
+.oi-icon.cooking { background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:var(--accent2); }
+.oi-icon.done    { background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:var(--green2); }
+
+.oi-name    { flex:1;color:var(--text); }
+.oi-station { color:var(--text3);font-size:10px; }
+.oi-prep    { color:var(--text3);font-size:11px;white-space:nowrap; }
+
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
+.sidebar { display:flex;flex-direction:column;gap:18px; }
+
+.panel {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:18px;
+  position:relative;overflow:hidden;
+}
+.panel::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(99,102,241,0.3),transparent);
+}
+
+/* stats */
+.stats-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+.stat-box {
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px;
+  transition:all 0.2s;
+}
+.stat-box:hover { border-color:var(--border2);transform:scale(1.02); }
+.stat-num {
+  font-size:26px;font-weight:900;line-height:1;
+  margin-bottom:4px;font-variant-numeric:tabular-nums;
+  font-family:var(--mono);
+}
+.stat-lbl { font-size:11px;color:var(--text3); }
+
+/* agent log */
+.agent-log-list { display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto; }
+.log-row {
+  display:flex;align-items:flex-start;gap:8px;
+  padding:7px 10px;border-radius:6px;
+  background:var(--surface2);border:1px solid var(--border);
+  font-size:11px;animation:log-in 0.3s ease;
+}
+@keyframes log-in {
+  from{opacity:0;transform:translateX(-6px);}
+  to{opacity:1;transform:translateX(0);}
+}
+.log-agent {
+  font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;
+  white-space:nowrap;flex-shrink:0;
+}
+.log-agent.boss  { background:rgba(139,92,246,0.2);color:#c4b5fd; }
+.log-agent.order { background:rgba(6,182,212,0.2);color:var(--cyan2); }
+.log-agent.sched { background:rgba(245,158,11,0.2);color:var(--amber2); }
+.log-agent.pack  { background:rgba(16,185,129,0.2);color:var(--green2); }
+.log-agent.station{ background:rgba(99,102,241,0.2);color:var(--accent2); }
+
+.log-event { color:var(--text2); }
+.log-detail { color:var(--text3);font-size:10px;margin-top:1px; }
+
+/* new order form */
+.form-group { margin-bottom:14px; }
+.form-label {
+  display:block;font-size:11px;font-weight:700;
+  color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;
+  margin-bottom:7px;
+}
+.form-input, .form-select {
+  width:100%;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--r2);
+  color:var(--text);font-family:var(--font);font-size:13px;
+  padding:10px 13px;outline:none;
+  transition:border-color 0.15s,box-shadow 0.15s;
+  appearance:none;
+}
+.form-input:focus, .form-select:focus {
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(99,102,241,0.15);
+}
+
+.dish-grid {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:6px;max-height:210px;overflow-y:auto;
+}
+.dish-pill {
+  display:flex;align-items:center;gap:6px;
+  padding:8px 10px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  cursor:pointer;transition:all 0.15s;
+  font-size:11px;color:var(--text2);
+}
+.dish-pill:hover { border-color:var(--border2);color:var(--text); }
+.dish-pill.sel {
+  border-color:rgba(99,102,241,0.4);
+  background:rgba(99,102,241,0.08);color:var(--accent2);
+}
+.dish-pill input { display:none; }
+.dish-time { margin-left:auto;font-size:10px;color:var(--text3); }
+.dish-pill.sel .dish-time { color:var(--accent2);opacity:0.7; }
+
+.btn-place {
+  width:100%;padding:12px;
+  background:linear-gradient(135deg,var(--accent),#4338ca);
+  color:white;border:none;border-radius:var(--r2);
+  font-family:var(--font);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;
+  box-shadow:0 4px 20px rgba(99,102,241,0.35);
+  position:relative;overflow:hidden;
+}
+.btn-place::before {
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent,rgba(255,255,255,0.1),transparent);
+  transform:translateX(-100%);transition:transform 0.4s;
+}
+.btn-place:hover::before { transform:translateX(100%); }
+.btn-place:hover { transform:translateY(-2px);box-shadow:0 8px 28px rgba(99,102,241,0.5); }
+.btn-place:active { transform:translateY(0); }
+.btn-place:disabled { opacity:0.5;cursor:not-allowed;transform:none; }
+
+/* ═══════════════════════════════════════
+   ORDERS HISTORY PAGE
+═══════════════════════════════════════ */
+.orders-page { padding:28px; }
+.orders-page-title {
+  font-size:24px;font-weight:800;
+  background:linear-gradient(135deg,var(--accent2),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:6px;
+}
+.orders-page-sub { font-size:13px;color:var(--text3);margin-bottom:28px; }
+
+.history-grid {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:16px;
+}
+
+.history-card {
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:20px;
+  cursor:pointer;transition:all 0.25s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+  animation:card-appear 0.3s ease backwards;
+}
+.history-card::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--cyan));
+  opacity:0;transition:opacity 0.3s;
+}
+.history-card:hover {
+  border-color:rgba(99,102,241,0.4);
+  transform:translateY(-4px) scale(1.01);
+  box-shadow:0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(99,102,241,0.2);
+}
+.history-card:hover::before { opacity:1; }
+
+.hc-top { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px; }
+.hc-id  { font-size:11px;font-weight:700;color:var(--accent2);font-family:var(--mono); }
+.hc-name { font-size:16px;font-weight:700;color:var(--text);margin-top:4px; }
+.hc-time { font-size:11px;color:var(--text3);margin-top:3px; }
+.hc-badge {
+  padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;
+  background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:var(--green2);
+}
+.hc-items { display:flex;flex-wrap:wrap;gap:6px;margin-top:12px; }
+.hc-dish-tag {
+  padding:3px 10px;border-radius:20px;font-size:11px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text2);
+}
+.hc-zone {
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;color:var(--text3);margin-top:10px;
+}
+
+/* ═══════════════════════════════════════
+   ORDER DETAIL MODAL
+═══════════════════════════════════════ */
+.modal-overlay {
+  position:fixed;inset:0;z-index:500;
+  background:rgba(6,8,16,0.85);
+  backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  animation:modal-bg-in 0.2s ease;
+}
+.modal-overlay.hidden { display:none; }
+@keyframes modal-bg-in { from{opacity:0;}to{opacity:1;} }
+
+.modal {
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:28px;
+  width:100%;max-width:540px;
+  position:relative;
+  animation:modal-in 0.3s cubic-bezier(.34,1.56,.64,1);
+  max-height:80vh;overflow-y:auto;
+}
+@keyframes modal-in {
+  from{opacity:0;transform:scale(0.9) translateY(20px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+.modal::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--cyan),var(--purple));
+}
+
+.modal-close {
+  position:absolute;top:16px;right:16px;
+  width:30px;height:30px;border-radius:7px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text2);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.modal-close:hover { background:var(--surface3);color:var(--text); }
+
+.modal-id   { font-size:12px;font-weight:700;color:var(--accent2);font-family:var(--mono);margin-bottom:6px; }
+.modal-name { font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px; }
+.modal-meta { font-size:12px;color:var(--text3);margin-bottom:20px; }
+
+.modal-section { margin-bottom:18px; }
+.modal-section-title {
+  font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;
+}
+
+.modal-item-row {
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  margin-bottom:6px;
+}
+.modal-item-icon { font-size:18px;width:28px;text-align:center; }
+.modal-item-name { flex:1;font-size:13px;font-weight:600;color:var(--text); }
+.modal-item-station { font-size:11px;color:var(--text3); }
+.modal-item-time { font-size:12px;color:var(--text2); }
+
+.modal-timeline {
+  display:flex;flex-direction:column;gap:0;
+}
+.timeline-row {
+  display:flex;align-items:flex-start;gap:12px;
+  padding:8px 0;position:relative;
+}
+.timeline-row:not(:last-child)::after {
+  content:'';position:absolute;left:14px;top:32px;bottom:0;
+  width:1px;background:var(--border);
+}
+.timeline-dot {
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+}
+.timeline-dot.done   { background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4); }
+.timeline-dot.active { background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4); }
+.timeline-dot.future { background:var(--surface2);border:1px solid var(--border); }
+
+.timeline-label { font-size:12px;font-weight:600;color:var(--text);margin-bottom:1px; }
+.timeline-time  { font-size:11px;color:var(--text3); }
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+#toast {
+  position:fixed;bottom:24px;right:24px;z-index:300;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:13px 18px;
+  font-size:13px;color:var(--text);
+  display:flex;align-items:center;gap:10px;
+  max-width:340px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.5);
+  transform:translateY(80px);opacity:0;
+  transition:all 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+#toast.show { transform:translateY(0);opacity:1; }
+
+/* ═══════════════════════════════════════
+   LOADING SCREEN
+═══════════════════════════════════════ */
+#loading {
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;transition:opacity 0.4s;
+}
+#loading.hidden { opacity:0;pointer-events:none; }
+.loading-logo { font-size:48px;animation:logo-pulse 2s ease-in-out infinite; }
+.loading-text { font-size:13px;color:var(--text2); }
+.loading-bar {
+  width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden;
+}
+.loading-fill {
+  height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));
+  border-radius:2px;animation:load-fill 1.5s ease-in-out infinite;
+}
+@keyframes load-fill {
+  0%{width:0%;margin-left:0;}
+  50%{width:60%;}
+  100%{width:0%;margin-left:100%;}
+}
+
+/* ═══════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════ */
+::-webkit-scrollbar { width:5px;height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2);border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--border3); }
+
+/* ═══════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════ */
+.reveal {
+  opacity:0;transform:translateY(20px);
+  transition:opacity 0.5s ease,transform 0.5s ease;
+}
+.reveal.visible { opacity:1;transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Background layers -->
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div id="cursor-glow"></div>
+
+<!-- Food particles container -->
+<div id="food-particles"></div>
+
+<!-- Loading screen -->
+<div id="loading">
+  <div class="loading-logo">🍳</div>
+  <div class="loading-text" id="loading-text">Initialising neural kitchen...</div>
+  <div class="loading-bar"><div class="loading-fill"></div></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay hidden" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<div id="app">
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-icon">🍳</div>
+      Neural Kitchen
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active" onclick="showPage('dashboard',this)">Dashboard</button>
+      <button class="nav-link" onclick="showPage('agents',this)">Agents</button>
+    </div>
+    <div class="nav-right">
+      <button class="nav-orders-btn" onclick="showPage('history',this)">
+        📦 Orders
+        <span class="nav-badge" id="completed-badge">0</span>
+      </button>
+      <div class="live-indicator">
+        <div class="live-dot"></div>
+        <span>Live</span>
+      </div>
+      <div class="clock" id="clock">00:00:00</div>
+    </div>
+  </nav>
+
+  <!-- ══ DASHBOARD PAGE ══ -->
+  <div class="page active" id="page-dashboard">
+    <!-- Risk Banner -->
+    <div class="risk-banner hidden" id="risk-banner">
+      <span>⚡</span>
+      <span id="risk-text">Orders approaching deadline</span>
+    </div>
+
+    <div class="main-grid">
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- Agent Status Bar -->
+        <div class="section-label reveal">AI Agents</div>
+        <div class="agent-bar reveal">
+          <div class="agent-card" data-agent="boss">
+            <div class="agent-pulse"></div>
+            <div class="agent-icon">👑</div>
+            <div class="agent-name">Boss Agent</div>
+            <div class="agent-status" id="boss-status">Monitoring kitchen</div>
+          </div>
+          <div class="agent-card" data-agent="order">
+            <div class="agent-pulse"></div>
+            <div class="agent-icon">📥</div>
+            <div class="agent-name">Order Agent</div>
+            <div class="agent-status" id="order-status">Accepting orders</div>
+          </div>
+          <div class="agent-card" data-agent="sched">
+            <div class="agent-pulse"></div>
+            <div class="agent-icon">🧠</div>
+            <div class="agent-name">Scheduler</div>
+            <div class="agent-status" id="sched-status">Longest-first algo</div>
+          </div>
+          <div class="agent-card" data-agent="pack">
+            <div class="agent-pulse"></div>
+            <div class="agent-icon">📦</div>
+            <div class="agent-name">Packing Agent</div>
+            <div class="agent-status" id="pack-status">Watching for ready orders</div>
+          </div>
+        </div>
+
+        <!-- Stations -->
+        <div class="section-label reveal">Kitchen Stations</div>
+        <div class="stations-grid reveal" id="stations-grid"></div>
+
+        <!-- Order Queue -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px" class="reveal">
+          <div class="section-label" style="margin-bottom:0">Order Queue</div>
+          <span id="order-count" style="font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:2px 10px;border-radius:12px;"></span>
+        </div>
+        <div class="order-filters reveal">
+          <button class="filter-pill active" onclick="setFilter('all',this)">All</button>
+          <button class="filter-pill" onclick="setFilter('accepted',this)">Active</button>
+          <button class="filter-pill" onclick="setFilter('at-risk',this)">At Risk</button>
+          <button class="filter-pill" onclick="setFilter('packing',this)">Packing</button>
+          <button class="filter-pill" onclick="setFilter('completed',this)">Done</button>
+        </div>
+        <div class="order-list" id="order-list"></div>
+      </div>
+
+      <!-- RIGHT SIDEBAR -->
+      <div class="sidebar">
+        <!-- Stats -->
+        <div class="panel reveal">
+          <div class="section-label">Live Stats</div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-num" id="s-active">0</div>
+              <div class="stat-lbl">Active</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num" style="color:var(--red)" id="s-risk">0</div>
+              <div class="stat-lbl">At Risk</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num" style="color:var(--accent2)" id="s-cooking">0</div>
+              <div class="stat-lbl">Cooking</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num" style="color:var(--green2)" id="s-done">0</div>
+              <div class="stat-lbl">Completed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- New Order Form -->
+        <div class="panel reveal">
+          <div class="section-label">Place Order</div>
+          <div class="form-group">
+            <label class="form-label">Customer Name</label>
+            <input class="form-input" id="f-name" type="text" placeholder="e.g. Rahul Sharma">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Delivery Zone</label>
+            <select class="form-select" id="f-zone">
+              <option value="zone_1">Zone 1 — 35 min SLA</option>
+              <option value="zone_2">Zone 2 — 45 min SLA</option>
+              <option value="zone_3">Zone 3 — 55 min SLA</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Select Dishes</label>
+            <div class="dish-grid" id="dish-grid"></div>
+          </div>
+          <button class="btn-place" onclick="placeOrder()">🚀 Place Order</button>
+        </div>
+
+        <!-- Menu Reference -->
+        <div class="panel reveal">
+          <div class="section-label">Menu</div>
+          <div id="menu-ref" style="display:flex;flex-direction:column;gap:5px;"></div>
+
+          <!-- Decision Policy (for PROBLEM 1-5) -->
+          <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border);">
+            <div class="section-label" style="margin-bottom:10px;">Decision Policy</div>
+            <div style="color:var(--text3);font-size:12px;line-height:1.6">
+              <div><b style="color:var(--text2)">What to cook next:</b> EDF (earliest delivery deadline) with station-aware scheduling.</div>
+              <div style="margin-top:6px"><b style="color:var(--text2)">Multi-item orders:</b> work backward from the longest item so shorter items don’t get cold.</div>
+              <div style="margin-top:6px"><b style="color:var(--text2)">Stations:</b> each station has limited capacity; we schedule using a “next available” time.</div>
+              <div style="margin-top:6px"><b style="color:var(--text2)">Reality diverges:</b> recompute progression and flag <b style="color:#fca5a5">at-risk</b> when estimates miss deadlines.</div>
+              <div style="margin-top:6px"><b style="color:var(--text2)">Manual reordering:</b> recompute estimates and keep the dashboard truthful (transparency over frozen promises).</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ AGENTS PAGE ══ -->
+  <div class="page" id="page-agents">
+    <div style="padding:28px">
+      <div class="section-label">Agent Activity Log</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="panel">
+          <div class="section-label" style="font-size:11px;margin-bottom:12px">Live Agent Log</div>
+          <div class="agent-log-list" id="agent-log-full"></div>
+        </div>
+        <div class="panel">
+          <div class="section-label" style="font-size:11px;margin-bottom:12px">Agent Hierarchy</div>
+          <div style="padding:10px">
+            <div style="text-align:center;margin-bottom:20px">
+              <div style="display:inline-flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:56px;height:56px;border-radius:14px;background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 0 20px rgba(139,92,246,0.3)">👑</div>
+                <div style="font-size:12px;font-weight:700;color:var(--text)">Boss Agent</div>
+                <div style="font-size:10px;color:var(--text3)">Overseer · Risk monitor</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:center;gap:2px;margin-bottom:8px">
+              <div style="width:1px;height:20px;background:var(--border)"></div>
+              <div style="width:160px;height:1px;background:var(--border);margin-top:20px"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(6,182,212,0.2);border:1px solid rgba(6,182,212,0.4);display:flex;align-items:center;justify-content:center;font-size:20px">📥</div>
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Order Agent</div>
+                <div style="font-size:10px;color:var(--text3)">Intake · Validate</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);display:flex;align-items:center;justify-content:center;font-size:20px">🧠</div>
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Scheduler</div>
+                <div style="font-size:10px;color:var(--text3)">EDF · Longest-first</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;font-size:20px">📦</div>
+                <div style="font-size:11px;font-weight:700;color:var(--text)">Packing Agent</div>
+                <div style="font-size:10px;color:var(--text3)">Pack · Dispatch</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:center;gap:2px;margin:8px 0">
+              <div style="width:1px;height:20px;background:var(--border)"></div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Station Agents (×4)</div>
+              <div style="display:flex;justify-content:center;gap:8px">
+                <span style="padding:3px 10px;border-radius:6px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);font-size:11px;color:#fca5a5">🔥 Tandoor</span>
+                <span style="padding:3px 10px;border-radius:6px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);font-size:11px;color:var(--amber2)">♨️ Burner</span>
+                <span style="padding:3px 10px;border-radius:6px;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);font-size:11px;color:#fdba74">🍳 Fryer</span>
+                <span style="padding:3px 10px;border-radius:6px;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);font-size:11px;color:var(--cyan2)">❄️ Cold</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY PAGE ══ -->
+  <div class="page" id="page-history">
+    <div class="orders-page">
+      <div class="orders-page-title">Order History</div>
+      <div class="orders-page-sub">All completed orders — click any card to view full details</div>
+      <div class="history-grid" id="history-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)">
+          No completed orders yet. Orders appear here once packed and dispatched.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════
+const API      = 'http://localhost:8000';
+const POLL_MS  = 2000;
+
+const STATION_META = {
+  tandoor:      {emoji:'🔥', label:'Tandoor',      color:'#ef4444'},
+  burner:       {emoji:'♨️',  label:'Burner',       color:'#f59e0b'},
+  fryer:        {emoji:'🍳', label:'Fryer',        color:'#f97316'},
+  cold_station: {emoji:'❄️',  label:'Cold Station', color:'#06b6d4'},
+};
+
+const DISH_EMOJI = {
+  dish_1:'🍛', dish_2:'🫕', dish_3:'🍲', dish_4:'🌯',
+  dish_5:'🌯', dish_6:'🥟', dish_7:'🍗', dish_8:'🥣',
+  dish_9:'🥤', dish_10:'🍛',
+};
+
+const FOOD_PARTICLES = ['🍛','🌯','🍗','🥟','🍲','🥤','🫕','🔥','⭐','🍽️'];
+
+let dashData      = null;
+let filterMode    = 'all';
+let selectedDishes= new Set();
+let completedOrders = [];
+let currentPage   = 'dashboard';
+
+// ══════════════════════════════════════════════
+//  BACKGROUND CANVAS — particle trails on scroll
+// ══════════════════════════════════════════════
+const canvas = document.getElementById('bg-canvas');
+const ctx    = canvas.getContext('2d');
+let particles = [];
+let scrollY   = 0;
+
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+window.addEventListener('scroll', () => {
+  const newScroll = window.scrollY;
+  const delta     = Math.abs(newScroll - scrollY);
+  scrollY = newScroll;
+
+  if (delta > 5) {
+    for (let i = 0; i < Math.min(3, Math.floor(delta / 8)); i++) {
+      particles.push({
+        x:    Math.random() * canvas.width,
+        y:    Math.random() * canvas.height,
+        size: 2 + Math.random() * 4,
+        vx:   (Math.random() - 0.5) * 2,
+        vy:   -1 - Math.random() * 3,
+        life: 1,
+        color: ['#6366f1','#06b6d4','#8b5cf6','#10b981'][Math.floor(Math.random()*4)],
+      });
+    }
+  }
+});
+
+function animateCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => {
+    p.x    += p.vx;
+    p.y    += p.vy;
+    p.life -= 0.03;
+    ctx.save();
+    ctx.globalAlpha = p.life * 0.7;
+    ctx.fillStyle   = p.color;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur  = 8;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+  requestAnimationFrame(animateCanvas);
+}
+animateCanvas();
+
+// ══════════════════════════════════════════════
+//  FOOD PARTICLES (floating emojis in BG)
+// ══════════════════════════════════════════════
+function spawnFoodParticle() {
+  const el   = document.createElement('div');
+  el.className = 'food-particle';
+  el.textContent = FOOD_PARTICLES[Math.floor(Math.random() * FOOD_PARTICLES.length)];
+  el.style.left    = Math.random() * 100 + 'vw';
+  el.style.fontSize = (20 + Math.random() * 24) + 'px';
+  el.style.animationDuration = (18 + Math.random() * 20) + 's';
+  el.style.animationDelay    = (Math.random() * 8) + 's';
+  document.getElementById('food-particles').appendChild(el);
+  setTimeout(() => el.remove(), 40000);
+}
+setInterval(spawnFoodParticle, 1800);
+for (let i = 0; i < 6; i++) setTimeout(spawnFoodParticle, i * 400);
+
+// ══════════════════════════════════════════════
+//  CURSOR GLOW
+// ══════════════════════════════════════════════
+const glow = document.getElementById('cursor-glow');
+document.addEventListener('mousemove', e => {
+  glow.style.left = e.clientX + 'px';
+  glow.style.top  = e.clientY + 'px';
+});
+
+// ══════════════════════════════════════════════
+//  CLOCK
+// ══════════════════════════════════════════════
+function tickClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-IN', {hour12:false});
+}
+setInterval(tickClock, 1000);
+tickClock();
+
+// ══════════════════════════════════════════════
+//  SCROLL REVEAL
+// ══════════════════════════════════════════════
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, {threshold: 0.1});
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+// ══════════════════════════════════════════════
+//  PAGE NAVIGATION
+// ══════════════════════════════════════════════
+function showPage(name, btn) {
+  currentPage = name;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link, .nav-orders-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'history') renderHistory();
+  if (name === 'agents')  renderAgentLog();
+}
+
+// ══════════════════════════════════════════════
+//  FETCH
+// ══════════════════════════════════════════════
+async function fetchData() {
+  try {
+    const r = await fetch(`${API}/api/dashboard`);
+    if (!r.ok) throw new Error();
+    dashData = await r.json();
+    completedOrders = dashData.completed || [];
+    render();
+    document.getElementById('loading').classList.add('hidden');
+  } catch(e) {
+    if (!dashData) {
+      document.getElementById('loading-text').textContent =
+        'Cannot connect — run: python server.py';
+    }
+  }
+}
+
+async function fetchMenu() {
+  try {
+    const r = await fetch(`${API}/api/menu`);
+    const menu = await r.json();
+    renderDishGrid(menu);
+    renderMenuRef(menu);
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════
+//  MASTER RENDER
+// ══════════════════════════════════════════════
+function render() {
+  if (!dashData) return;
+  renderAgentCards();
+  renderStations(dashData.stations);
+  renderOrders(dashData.orders);
+  renderStats(dashData.orders);
+  renderRiskBanner(dashData.orders);
+  document.getElementById('completed-badge').textContent = completedOrders.length;
+  if (currentPage === 'agents')  renderAgentLog();
+  if (currentPage === 'history') renderHistory();
+}
+
+// ══════════════════════════════════════════════
+//  AGENT CARDS
+// ══════════════════════════════════════════════
+function renderAgentCards() {
+  if (!dashData?.agent_log?.length) return;
+  const logs = dashData.agent_log;
+  const latest = (name) => logs.find(l => l.agent.toLowerCase().includes(name));
+
+  const bossLog  = latest('boss');
+  const packLog  = latest('pack');
+  const schedLog = latest('sched');
+
+  if (bossLog)  document.getElementById('boss-status').textContent  = bossLog.event.replace(/_/g,' ').toLowerCase();
+  if (packLog)  document.getElementById('pack-status').textContent  = packLog.detail.slice(0,30);
+  if (schedLog) document.getElementById('sched-status').textContent = schedLog.event.replace(/_/g,' ').toLowerCase();
+
+  const cooking = dashData.orders?.flatMap(o=>o.items||[]).filter(i=>i.state==='cooking').length || 0;
+  document.getElementById('order-status').textContent = `${cooking} items cooking`;
+}
+
+// ══════════════════════════════════════════════
+//  STATIONS
+// ══════════════════════════════════════════════
+function renderStations(stations) {
+  const grid = document.getElementById('stations-grid');
+  grid.innerHTML = Object.entries(stations).map(([key, data]) => {
+    const meta     = STATION_META[key];
+    const cap      = data.capacity;
+    const used     = data.cooking.length;
+    const allItems = [...data.cooking, ...data.queued_next.slice(0,2)];
+
+    const dots = Array.from({length:cap}, (_, i) =>
+      `<div class="cap-dot ${i<used?'active':''}"></div>`
+    ).join('');
+
+    const itemsHtml = allItems.length === 0
+      ? `<div class="station-idle">Idle — no items queued</div>`
+      : allItems.map(item => {
+          const isCooking = item.state === 'cooking';
+          const pct       = item.progress || 0;
+          const mins      = item.remaining_sim_mins ?? item.prep_time;
+          return `
+            <div class="station-item ${isCooking?'cooking':''}">
+              <div class="station-item-progress" style="width:${pct}%"></div>
+              <div class="item-dot ${isCooking?'cooking':'queued'}"></div>
+              <div class="item-name">${item.dish_name}</div>
+              <div class="item-cust">${item.customer||''}</div>
+              <div class="item-mins">${isCooking?`${pct}%`:`${item.prep_time}m`}</div>
+            </div>`;
+        }).join('');
+
+    return `
+      <div class="station-card ${used>0?'busy':''}" data-station="${key}">
+        <div class="station-header">
+          <div class="station-info">
+            <span class="station-emoji">${meta.emoji}</span>
+            <div>
+              <div class="station-name">${meta.label}</div>
+              <div class="station-sub">${used}/${cap} slots active</div>
+            </div>
+          </div>
+          <div class="cap-dots">${dots}</div>
+        </div>
+        <div class="station-items">${itemsHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  ORDERS
+// ══════════════════════════════════════════════
+function renderOrders(orders) {
+  let filtered = orders;
+  if (filterMode === 'accepted')  filtered = orders.filter(o => o.status==='accepted');
+  if (filterMode === 'at-risk')   filtered = orders.filter(o => o.at_risk);
+  if (filterMode === 'packing')   filtered = orders.filter(o => o.status==='packing');
+  if (filterMode === 'completed') filtered = orders.filter(o => o.status==='completed');
+
+  document.getElementById('order-count').textContent = `${filtered.length} orders`;
+
+  const list = document.getElementById('order-list');
+  if (!filtered.length) {
+    list.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3)">Nothing to show</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map((o, idx) => {
+    const isRisk = o.at_risk === 1;
+    const isDone = o.status === 'completed';
+    const isPack = o.status === 'packing';
+
+    const etaMs   = o.est_ready_at ? new Date(o.est_ready_at) - Date.now() : 0;
+    const etaMins = Math.max(0, Math.floor(etaMs / 60000));
+    const etaSecs = Math.max(0, Math.floor((etaMs%60000)/1000));
+    const etaStr  = isDone ? 'Done' : isPack ? 'Packing' : etaMs<=0 ? 'Ready' : `${etaMins}:${String(etaSecs).padStart(2,'0')}`;
+    const etaCls  = isRisk ? 'risk' : etaMins < 5 && !isDone ? 'urgent' : '';
+
+    const totalMs   = new Date(o.deadline_at) - new Date(o.ordered_at);
+    const elapsedMs = Date.now() - new Date(o.ordered_at);
+    const pct       = Math.min(100, Math.max(0, (elapsedMs/totalMs)*100));
+    const barColor  = isRisk?'var(--red)':pct>75?'var(--amber)':'var(--green)';
+
+    const etaFmt = o.est_ready_at
+      ? new Date(o.est_ready_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})
+      : '—';
+
+    let statusBadge = `<span class="badge badge-accepted">${o.status}</span>`;
+    if (isRisk)  statusBadge = `<span class="badge badge-risk">⚠ At Risk</span>`;
+    if (isPack)  statusBadge = `<span class="badge badge-packing">📦 Packing</span>`;
+    if (isDone)  statusBadge = `<span class="badge badge-done">✓ Done</span>`;
+
+    const itemsHtml = (o.items||[]).map(item => {
+      const icon = item.state==='done'?'✓':item.state==='cooking'?'◉':'○';
+      return `
+        <div class="oi-row">
+          <div class="oi-icon ${item.state}">${icon}</div>
+          <div class="oi-name">${item.dish_name}</div>
+          <div class="oi-station">${item.station?.replace('_',' ')}</div>
+          <div class="oi-prep">${item.prep_time}m</div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="order-card ${isRisk?'at-risk':''} ${isPack?'packing':''} ${isDone?'completed':''}"
+           style="animation-delay:${idx*0.05}s">
+        <div class="order-top">
+          <div>
+            <div class="order-id-row">
+              <div class="order-id">${o.id}</div>
+              ${statusBadge}
+            </div>
+            <div class="order-customer">${o.customer}</div>
+            <div class="order-meta">
+              <span class="zone-tag">${o.zone}</span>
+              <span>${timeAgo(o.ordered_at)}</span>
+              <span>·</span>
+              <span>⏰ ${Math.round(o.mins_to_deadline)}m left</span>
+            </div>
+          </div>
+          <div class="order-eta">
+            <div class="eta-label">ETA</div>
+            <div class="eta-value ${etaCls}">${etaStr}</div>
+            <div class="eta-clock">${etaFmt}</div>
+          </div>
+        </div>
+        <div class="deadline-track">
+          <div class="deadline-fill" style="width:${pct}%;background:${barColor}"></div>
+        </div>
+        <div class="oi-list">${itemsHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  STATS
+// ══════════════════════════════════════════════
+function renderStats(orders) {
+  const active  = orders.filter(o=>o.status==='accepted'||o.status==='packing').length;
+  const risk    = orders.filter(o=>o.at_risk).length;
+  const cooking = orders.flatMap(o=>o.items||[]).filter(i=>i.state==='cooking').length;
+  const done    = completedOrders.length;
+  document.getElementById('s-active').textContent  = active;
+  document.getElementById('s-risk').textContent    = risk;
+  document.getElementById('s-cooking').textContent = cooking;
+  document.getElementById('s-done').textContent    = done;
+}
+
+// ══════════════════════════════════════════════
+//  RISK BANNER
+// ══════════════════════════════════════════════
+function renderRiskBanner(orders) {
+  const risky = orders.filter(o=>o.at_risk&&o.status!=='completed');
+  const banner = document.getElementById('risk-banner');
+  if (risky.length) {
+    banner.classList.remove('hidden');
+    document.getElementById('risk-text').textContent =
+      `${risky.length} order(s) at risk: ${risky.slice(0,3).map(o=>o.customer).join(', ')}`;
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+
+// ══════════════════════════════════════════════
+//  DISH GRID (form)
+// ══════════════════════════════════════════════
+function renderDishGrid(menu) {
+  document.getElementById('dish-grid').innerHTML = menu.map(d => `
+    <label class="dish-pill" id="dp-${d.id}">
+      <input type="checkbox" value="${d.id}" onchange="toggleDish('${d.id}',this)">
+      <span>${DISH_EMOJI[d.id]||'🍽️'} ${d.name}</span>
+      <span class="dish-time">${d.prep_time}m</span>
+    </label>`).join('');
+}
+
+function toggleDish(id, cb) {
+  const lbl = document.getElementById('dp-'+id);
+  if (cb.checked) { selectedDishes.add(id);    lbl.classList.add('sel'); }
+  else            { selectedDishes.delete(id);  lbl.classList.remove('sel'); }
+}
+
+// ══════════════════════════════════════════════
+//  MENU REFERENCE
+// ══════════════════════════════════════════════
+function renderMenuRef(menu) {
+  const colors = {tandoor:'#ef4444',burner:'#f59e0b',fryer:'#f97316',cold_station:'#06b6d4'};
+  document.getElementById('menu-ref').innerHTML = menu.map(d => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <div style="width:3px;height:28px;border-radius:2px;background:${colors[d.station]};flex-shrink:0"></div>
+      <span style="font-size:15px">${DISH_EMOJI[d.id]||'🍽️'}</span>
+      <div style="flex:1;font-size:12px;color:var(--text)">${d.name}</div>
+      <div style="font-size:11px;color:var(--text3)">${d.prep_time}m</div>
+      <div style="font-size:10px;color:var(--text3)">${d.station.replace('_',' ')}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+//  AGENT LOG
+// ══════════════════════════════════════════════
+function agentClass(agent) {
+  if (agent.includes('Boss'))    return 'boss';
+  if (agent.includes('Order'))   return 'order';
+  if (agent.includes('Sched'))   return 'sched';
+  if (agent.includes('Packing')) return 'pack';
+  return 'station';
+}
+
+function renderAgentLog() {
+  if (!dashData?.agent_log) return;
+  const logs = dashData.agent_log;
+  const container = document.getElementById('agent-log-full');
+  if (!container) return;
+  container.innerHTML = logs.map(l => `
+    <div class="log-row">
+      <span class="log-agent ${agentClass(l.agent)}">${l.agent.replace('Agent','').replace('[','').replace(']','').trim()}</span>
+      <div>
+        <div class="log-event">${l.event.replace(/_/g,' ')}</div>
+        <div class="log-detail">${l.detail||''}</div>
+        ${l.order_details ? `<div class="log-detail" style="margin-top:6px;color:var(--text2)">${l.order_details}</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+
+// ══════════════════════════════════════════════
+//  ORDER HISTORY
+// ══════════════════════════════════════════════
+function renderHistory() {
+  const grid = document.getElementById('history-grid');
+  if (!completedOrders.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)">No completed orders yet.</div>`;
+    return;
+  }
+  grid.innerHTML = completedOrders.map((o, idx) => {
+    const completedAt = o.completed_at
+      ? new Date(o.completed_at).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,day:'2-digit',month:'short'})
+      : '—';
+    const items = (o.items||[]).map(i =>
+      `<span class="hc-dish-tag">${DISH_EMOJI[i.dish_id]||'🍽️'} ${i.dish_name}</span>`
+    ).join('');
+    return `
+      <div class="history-card" style="animation-delay:${idx*0.06}s" onclick="openOrderModal(${JSON.stringify(o).replace(/"/g,'&quot;')})">
+        <div class="hc-top">
+          <div>
+            <div class="hc-id">${o.id}</div>
+            <div class="hc-name">${o.customer}</div>
+            <div class="hc-time">Completed at ${completedAt}</div>
+          </div>
+          <div class="hc-badge">✓ Done</div>
+        </div>
+        <div class="hc-items">${items}</div>
+        <div class="hc-zone">📍 ${o.zone?.replace('_',' ').toUpperCase()} · ${(o.items||[]).length} items</div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  ORDER MODAL
+// ══════════════════════════════════════════════
+function openOrderModal(order) {
+  if (typeof order === 'string') order = JSON.parse(order);
+  const orderedAt   = order.ordered_at   ? new Date(order.ordered_at).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,day:'2-digit',month:'short'}) : '—';
+  const completedAt = order.completed_at ? new Date(order.completed_at).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true,day:'2-digit',month:'short'}) : '—';
+  const packedAt    = order.packed_at    ? new Date(order.packed_at).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+
+  const totalSecs = order.ordered_at && order.completed_at
+    ? Math.round((new Date(order.completed_at) - new Date(order.ordered_at)) / 1000)
+    : null;
+
+  const itemRows = (order.items||[]).map(i => `
+    <div class="modal-item-row">
+      <div class="modal-item-icon">${DISH_EMOJI[i.dish_id]||'🍽️'}</div>
+      <div class="modal-item-name">${i.dish_name}</div>
+      <div class="modal-item-station">${i.station?.replace('_',' ')}</div>
+      <div class="modal-item-time">${i.prep_time} min</div>
+    </div>`).join('');
+
+  const timeline = [
+    {icon:'📥', label:'Order Accepted', time:orderedAt,   state:'done'},
+    {icon:'🧠', label:'Scheduled',      time:'Auto',       state:'done'},
+    {icon:'🔥', label:'Cooking Started',time:'Auto',       state:'done'},
+    {icon:'✅', label:'All Items Done', time:'Auto',       state:'done'},
+    {icon:'📦', label:'Packing',        time:packedAt,     state:'done'},
+    {icon:'🚀', label:'Dispatched',     time:completedAt,  state:'done'},
+  ].map(step => `
+    <div class="timeline-row">
+      <div class="timeline-dot ${step.state}">${step.icon}</div>
+      <div>
+        <div class="timeline-label">${step.label}</div>
+        <div class="timeline-time">${step.time}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-id">${order.id}</div>
+    <div class="modal-name">${order.customer}</div>
+    <div class="modal-meta">
+      ${order.zone?.replace('_',' ').toUpperCase()}
+      ${totalSecs ? ` · Completed in ${Math.floor(totalSecs/60)}m ${totalSecs%60}s` : ''}
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Items Ordered</div>
+      ${itemRows}
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Order Journey</div>
+      <div class="modal-timeline">${timeline}</div>
+    </div>`;
+
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+// ══════════════════════════════════════════════
+//  PLACE ORDER
+// ══════════════════════════════════════════════
+async function placeOrder() {
+  const name = document.getElementById('f-name').value.trim();
+  const zone = document.getElementById('f-zone').value;
+  if (!name)                  { showToast('⚠️','Enter customer name','#f59e0b'); return; }
+  if (!selectedDishes.size)   { showToast('⚠️','Select at least one dish','#f59e0b'); return; }
+
+  const btn = document.querySelector('.btn-place');
+  btn.disabled = true; btn.textContent = 'Placing...';
+
+  try {
+    const r = await fetch(`${API}/api/orders`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({customer_name:name, delivery_zone:zone, items:[...selectedDishes]}),
+    });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    showToast('🚀', `Order ${data.order_id} placed! Agents notified.`, '#6366f1');
+    document.getElementById('f-name').value = '';
+    selectedDishes.clear();
+    document.querySelectorAll('.dish-pill').forEach(l => {
+      l.classList.remove('sel');
+      l.querySelector('input').checked = false;
+    });
+    await fetchData();
+  } catch(e) {
+    showToast('❌','Failed to place order','#ef4444');
+  } finally {
+    btn.disabled = false; btn.textContent = '🚀 Place Order';
+  }
+}
+
+function setFilter(mode, btn) {
+  filterMode = mode;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (dashData) renderOrders(dashData.orders);
+}
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function timeAgo(iso) {
+  const mins = Math.round((Date.now() - new Date(iso)) / 60000);
+  if (mins < 1)  return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  return `${Math.floor(mins/60)}h ago`;
+}
+
+let toastTimer;
+function showToast(icon, msg, color='#6366f1') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent  = msg;
+  t.style.borderColor = color + '55';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ══════════════════════════════════════════════
+//  3D TILT ON STATION CARDS (mouse)
+// ══════════════════════════════════════════════
+document.addEventListener('mousemove', e => {
+  document.querySelectorAll('.station-card').forEach(card => {
+    const rect   = card.getBoundingClientRect();
+    const cx     = rect.left + rect.width  / 2;
+    const cy     = rect.top  + rect.height / 2;
+    const dx     = (e.clientX - cx) / (rect.width  / 2);
+    const dy     = (e.clientY - cy) / (rect.height / 2);
+    const dist   = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 1.5) {
+      card.style.transform =
+        `perspective(600px) rotateX(${-dy*5}deg) rotateY(${dx*5}deg) translateZ(6px)`;
+    } else {
+      card.style.transform = '';
+    }
+  });
+});
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+fetchMenu();
+fetchData();
+setInterval(fetchData, POLL_MS);
+</script>
+</body>
+</html>
