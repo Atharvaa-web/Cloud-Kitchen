@@ -619,55 +619,155 @@ class KitchenHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
-    def do_GET(self):
-        parsed = urlparse(self.path)
-        path = parsed.path.rstrip("/")
+   def do_GET(self):
+    parsed = urlparse(self.path)
+    path = parsed.path.rstrip("/")
 
-        if path == "/api/ping":
+    # ─────────────────────────────────────────
+    # FRONTEND ROUTES
+    # ─────────────────────────────────────────
+
+    if path == "":
+        path = "/"
+
+    # Serve index.html
+    if path == "/":
+        try:
+            with open("../frontend/index.html", "rb") as file:
+                content = file.read()
+
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Content-Length", str(len(content)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+
+            self.wfile.write(content)
+            return
+
+        except Exception as e:
             json_response(self, {
-                "ok": True,
-                "time": datetime.datetime.utcnow().isoformat() + "Z",
-                "server": "cloud-kitchen"
-            })
+                "error": "Failed to load frontend",
+                "detail": str(e)
+            }, 500)
             return
 
-        if path == "/api/orders/status":
-            try:
-                json_response(self, build_status())
-            except Exception as e:
-                json_response(self, {"error": "orders/status failed", "detail": str(e)}, 500)
+    # Serve CSS / JS / Images / Static Files
+    try:
+        static_extensions = (
+            ".css", ".js", ".png", ".jpg", ".jpeg",
+            ".gif", ".svg", ".ico", ".json"
+        )
+
+        if path.endswith(static_extensions):
+
+            file_path = "../frontend" + path
+
+            with open(file_path, "rb") as file:
+                content = file.read()
+
+            content_type = "text/plain"
+
+            if path.endswith(".css"):
+                content_type = "text/css"
+
+            elif path.endswith(".js"):
+                content_type = "application/javascript"
+
+            elif path.endswith(".png"):
+                content_type = "image/png"
+
+            elif path.endswith(".jpg") or path.endswith(".jpeg"):
+                content_type = "image/jpeg"
+
+            elif path.endswith(".gif"):
+                content_type = "image/gif"
+
+            elif path.endswith(".svg"):
+                content_type = "image/svg+xml"
+
+            elif path.endswith(".ico"):
+                content_type = "image/x-icon"
+
+            elif path.endswith(".json"):
+                content_type = "application/json"
+
+            self.send_response(200)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(content)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+
+            self.wfile.write(content)
             return
 
-        if path == "/api/dashboard":
-            try:
-                orders = build_status()
-                stations = build_station_load()
-                completed = build_completed_orders()
-                agent_log = build_agent_log()
-                data = {
-                    "orders": orders,
-                    "stations": stations,
-                    "menu": MENU,
-                    "completed": completed,
-                    "agent_log": agent_log,
-                }
-                json_response(self, data)
-            except Exception as e:
-                import traceback
-                print("[error] /api/dashboard exception:", repr(e))
-                traceback.print_exc()
-                json_response(self, {"error": "dashboard failed", "detail": str(e)}, 500)
-            return
+    except Exception:
+        pass
 
+    # ─────────────────────────────────────────
+    # API ROUTES
+    # ─────────────────────────────────────────
 
-        if path == "/api/menu":
-            try:
-                json_response(self, MENU)
-            except Exception as e:
-                json_response(self, {"error": "menu failed", "detail": str(e)}, 500)
-            return
+    if path == "/api/ping":
+        json_response(self, {
+            "ok": True,
+            "time": datetime.datetime.utcnow().isoformat() + "Z",
+            "server": "cloud-kitchen"
+        })
+        return
 
-        json_response(self, {"error": "Not found"}, 404)
+    if path == "/api/orders/status":
+        try:
+            json_response(self, build_status())
+        except Exception as e:
+            json_response(self, {
+                "error": "orders/status failed",
+                "detail": str(e)
+            }, 500)
+        return
+
+    if path == "/api/dashboard":
+        try:
+            orders = build_status()
+            stations = build_station_load()
+            completed = build_completed_orders()
+            agent_log = build_agent_log()
+
+            data = {
+                "orders": orders,
+                "stations": stations,
+                "menu": MENU,
+                "completed": completed,
+                "agent_log": agent_log,
+            }
+
+            json_response(self, data)
+
+        except Exception as e:
+            import traceback
+            print("[error] /api/dashboard exception:", repr(e))
+            traceback.print_exc()
+
+            json_response(self, {
+                "error": "dashboard failed",
+                "detail": str(e)
+            }, 500)
+
+        return
+
+    if path == "/api/menu":
+        try:
+            json_response(self, MENU)
+
+        except Exception as e:
+            json_response(self, {
+                "error": "menu failed",
+                "detail": str(e)
+            }, 500)
+
+        return
+
+    json_response(self, {"error": "Not found"}, 404)
 
 
     def do_POST(self):
