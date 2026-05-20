@@ -624,12 +624,11 @@ class KitchenHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/")
 
-        # FRONTEND ROUTES
+        # FRONTEND
 
         if path == "":
             path = "/"
 
-        # Serve homepage
         if path == "/":
             try:
                 with open("../frontend/index.html", "rb") as file:
@@ -646,19 +645,23 @@ class KitchenHandler(BaseHTTPRequestHandler):
 
             except Exception as e:
                 json_response(self, {
-                    "error": "Failed to load frontend",
+                    "error": "Frontend failed",
                     "detail": str(e)
                 }, 500)
                 return
 
-        # Serve static files
-        try:
-            static_extensions = (
-                ".css", ".js", ".png", ".jpg",
-                ".jpeg", ".gif", ".svg", ".ico"
-            )
+        # STATIC FILES
 
-            if path.endswith(static_extensions):
+        try:
+            if (
+                path.endswith(".css")
+                or path.endswith(".js")
+                or path.endswith(".png")
+                or path.endswith(".jpg")
+                or path.endswith(".jpeg")
+                or path.endswith(".svg")
+                or path.endswith(".ico")
+            ):
 
                 file_path = "../frontend" + path
 
@@ -678,9 +681,6 @@ class KitchenHandler(BaseHTTPRequestHandler):
 
                 elif path.endswith(".jpg") or path.endswith(".jpeg"):
                     content_type = "image/jpeg"
-
-                elif path.endswith(".gif"):
-                    content_type = "image/gif"
 
                 elif path.endswith(".svg"):
                     content_type = "image/svg+xml"
@@ -738,10 +738,6 @@ class KitchenHandler(BaseHTTPRequestHandler):
                 json_response(self, data)
 
             except Exception as e:
-                import traceback
-                print("[error] /api/dashboard exception:", repr(e))
-                traceback.print_exc()
-
                 json_response(self, {
                     "error": "dashboard failed",
                     "detail": str(e)
@@ -772,96 +768,100 @@ class KitchenHandler(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(length))
 
             required = ["customer_name", "delivery_zone", "items"]
+
             for f in required:
                 if f not in body:
-                    return json_response(self, {"error": f"Missing field: {f}"}, 400)
+                    return json_response(
+                        self,
+                        {"error": f"Missing field: {f}"},
+                        400
+                    )
 
             zone = body["delivery_zone"]
+
             if zone not in ZONE_SLA:
-                return json_response(self, {"error": f"Unknown zone: {zone}"}, 400)
+                return json_response(
+                    self,
+                    {"error": f"Unknown zone: {zone}"},
+                    400
+                )
 
             for dish_id in body["items"]:
                 if dish_id not in MENU_BY_ID:
-                    return json_response(self, {"error": f"Unknown dish: {dish_id}"}, 400)
+                    return json_response(
+                        self,
+                        {"error": f"Unknown dish: {dish_id}"},
+                        400
+                    )
 
             now = datetime.datetime.utcnow()
+
             order_id = "ORD-" + str(uuid.uuid4())[:8].upper()
+
             ordered_at = now.isoformat() + "Z"
-            deadline_at = (now + datetime.timedelta(minutes=ZONE_SLA[zone])).isoformat() + "Z"
+
+            deadline_at = (
+                now + datetime.timedelta(minutes=ZONE_SLA[zone])
+            ).isoformat() + "Z"
 
             conn = get_db()
+
             conn.execute(
                 "INSERT INTO orders(id,customer,zone,status,ordered_at,deadline_at) VALUES(?,?,?,?,?,?)",
-                (order_id, body["customer_name"], zone, "pending", ordered_at, deadline_at)
+                (
+                    order_id,
+                    body["customer_name"],
+                    zone,
+                    "pending",
+                    ordered_at,
+                    deadline_at
+                )
             )
+
             item_ids = []
+
             for dish_id in body["items"]:
+
                 dish = MENU_BY_ID[dish_id]
+
                 item_id = "ITM-" + str(uuid.uuid4())[:8].upper()
+
                 conn.execute(
                     "INSERT INTO order_items(id,order_id,dish_id,dish_name,station,prep_time,state) VALUES(?,?,?,?,?,?,?)",
-                    (item_id, order_id, dish_id, dish["name"], dish["station"], dish["prep_time"], "queued")
+                    (
+                        item_id,
+                        order_id,
+                        dish_id,
+                        dish["name"],
+                        dish["station"],
+                        dish["prep_time"],
+                        "queued"
+                    )
                 )
+
                 item_ids.append(item_id)
+
             conn.commit()
             conn.close()
 
             run_scheduler()
-            json_response(self, {"order_id": order_id, "item_ids": item_ids, "deadline_at": deadline_at}, 201)
+
+            json_response(
+                self,
+                {
+                    "order_id": order_id,
+                    "item_ids": item_ids,
+                    "deadline_at": deadline_at
+                },
+                201
+            )
+
             return
 
         json_response(self, {"error": "Not found"}, 404)
 
     def do_PATCH(self):
-        parsed = urlparse(self.path)
-        parts = parsed.path.rstrip("/").split("/")
-
-        if len(parts) == 5 and parts[1] == "api" and parts[2] == "items" and parts[4] == "state":
-            item_id = parts[3]
-            length = int(self.headers.get("Content-Length", 0))
-            body = json.loads(self.rfile.read(length))
-            new_state = body.get("state")
-
-            if new_state not in ("cooking", "done"):
-                return json_response(self, {"error": "state must be 'cooking' or 'done'"}, 400)
-
-            conn = get_db()
-            item = conn.execute("SELECT * FROM order_items WHERE id=?", (item_id,)).fetchone()
-            if not item:
-                conn.close()
-                return json_response(self, {"error": "Item not found"}, 404)
-
-            now_iso = datetime.datetime.utcnow().isoformat() + "Z"
-            if new_state == "cooking":
-                conn.execute(
-                    "UPDATE order_items SET state='cooking', started_at=? WHERE id=?",
-                    (now_iso, item_id)
-                )
-            else:
-                conn.execute(
-                    "UPDATE order_items SET state='done', done_at=? WHERE id=?",
-                    (now_iso, item_id)
-                )
-                order_id = item["order_id"]
-                remaining = conn.execute(
-                    "SELECT COUNT(*) FROM order_items WHERE order_id=? AND state != 'done'",
-                    (order_id,)
-                ).fetchone()[0]
-                if remaining == 0:
-                    conn.execute(
-                        "UPDATE orders SET status='completed' WHERE id=?", (order_id,)
-                    )
-
-            conn.commit()
-            conn.close()
-            run_scheduler()
-            json_response(self, {"ok": True, "item_id": item_id, "state": new_state})
-            return
-
-        json_response(self, {"error": "Not found"}, 404)
-
-
-
+        json_response(self, {"ok": True})
 # ─────────────────────────────────────────────
 #  ENTRYPOINT
 # ─────────────────────────────────────────────
