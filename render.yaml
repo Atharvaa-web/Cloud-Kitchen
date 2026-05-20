@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: cloud-kitchen
+    runtime: python
+    buildCommand: ""
+    startCommand: python server.py

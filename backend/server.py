@@ -13,8 +13,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 DB_PATH = "kitchen.db"
-PORT = 8000
-
+import os
+PORT = int(os.environ.get("PORT", 8000))
 # ─────────────────────────────────────────────
 #  CONSTANTS & CONFIG
 # ─────────────────────────────────────────────
