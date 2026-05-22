@@ -9,12 +9,13 @@ import json
 import uuid
 import datetime
 import math
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 DB_PATH = "kitchen.db"
 import os
 PORT = int(os.environ.get("PORT", 8000))
+KEEP_SAMPLE_ORDERS = os.environ.get("KEEP_SAMPLE_ORDERS", "0") == "1"
 # ─────────────────────────────────────────────
 #  CONSTANTS & CONFIG
 # ─────────────────────────────────────────────
@@ -144,6 +145,8 @@ SAMPLE_ORDERS = [
 
 
 def seed_db():
+    if not KEEP_SAMPLE_ORDERS:
+        return
     conn = get_db()
     count = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
     if count > 0:
@@ -170,6 +173,27 @@ def seed_db():
     conn.commit()
     conn.close()
     print(f"[seed] Seeded {len(SAMPLE_ORDERS)} orders")
+
+
+def remove_sample_orders():
+    """Keep the live kitchen empty unless the user intentionally enables demo data."""
+    if KEEP_SAMPLE_ORDERS:
+        return
+    sample_customers = [s["customer"] for s in SAMPLE_ORDERS]
+    placeholders = ",".join("?" for _ in sample_customers)
+    conn = get_db()
+    rows = conn.execute(
+        f"SELECT id FROM orders WHERE customer IN ({placeholders})",
+        sample_customers
+    ).fetchall()
+    order_ids = [r["id"] for r in rows]
+    if order_ids:
+        id_placeholders = ",".join("?" for _ in order_ids)
+        conn.execute(f"DELETE FROM order_items WHERE order_id IN ({id_placeholders})", order_ids)
+        conn.execute(f"DELETE FROM orders WHERE id IN ({id_placeholders})", order_ids)
+        print(f"[seed] Removed {len(order_ids)} bundled sample orders")
+    conn.commit()
+    conn.close()
 
 
 # ─────────────────────────────────────────────
@@ -284,10 +308,11 @@ def run_scheduler():
 
 # Real-time automation settings (seconds)
 # Prep/cooking time per item shown on the Agents page.
+STAGE_ACCEPT_S = 4
 STAGE_PREP_S = 30
 STAGE_PACK_S = 20
 STAGE_SERVE_S = 20
-STAGE_TOTAL_S = STAGE_PREP_S + STAGE_PACK_S + STAGE_SERVE_S
+STAGE_TOTAL_S = STAGE_ACCEPT_S + STAGE_PREP_S + STAGE_PACK_S + STAGE_SERVE_S
 
 
 def _parse_utc(iso):
@@ -346,44 +371,66 @@ def run_realtime_automation_step():
         # Determine stage based on elapsed
         elapsed_s = (now - stage_anchor).total_seconds()
 
-        # Stage 1: PREP (items queued->cooking->done)
-        if elapsed_s < STAGE_PREP_S:
-            # accepted stage; cooking should be running after immediate start
-            # For simplicity + real-time: once order appears, we start cooking immediately.
+        # Stage 0: accepted. The agents have the order but the stations do not consume slots yet.
+        if elapsed_s < STAGE_ACCEPT_S:
             if o["status"] != "accepted":
                 conn.execute("UPDATE orders SET status='accepted', accepted_at=? WHERE id=?", (now.isoformat()+"Z", order_id))
 
-            conn.execute(
-                """UPDATE order_items
-                   SET state='cooking', started_at=COALESCE(started_at, ?)
-                   WHERE order_id=? AND state='queued'""",
-                (now.isoformat()+"Z", order_id)
-            )
+        # Stage 1: preparing. Station slots are capacity-aware.
+        elif elapsed_s < STAGE_ACCEPT_S + STAGE_PREP_S:
+            if o["status"] != "preparing":
+                conn.execute("UPDATE orders SET status='preparing' WHERE id=?", (order_id,))
 
-        # Stage 2 boundary: cooking done exactly at +20s
-        elif elapsed_s < STAGE_PREP_S + STAGE_PACK_S:
+            for station, cfg in STATIONS.items():
+                cooking_count = conn.execute(
+                    """SELECT COUNT(*)
+                       FROM order_items oi
+                       JOIN orders oo ON oo.id=oi.order_id
+                       WHERE oi.station=? AND oi.state='cooking' AND oo.status='preparing'""",
+                    (station,)
+                ).fetchone()[0]
+                slots = max(0, cfg["capacity"] - cooking_count)
+                if slots <= 0:
+                    continue
+                ready_items = conn.execute(
+                    """SELECT oi.id
+                       FROM order_items oi
+                       JOIN orders oo ON oo.id=oi.order_id
+                       WHERE oi.station=? AND oi.state='queued' AND oo.status='preparing'
+                       ORDER BY oo.deadline_at ASC, oi.prep_time DESC
+                       LIMIT ?""",
+                    (station, slots)
+                ).fetchall()
+                for item in ready_items:
+                    conn.execute(
+                        "UPDATE order_items SET state='cooking', started_at=COALESCE(started_at, ?) WHERE id=?",
+                        (now.isoformat()+"Z", item["id"])
+                    )
+
+        # Stage 2 boundary: cooking done, order moves to packing.
+        elif elapsed_s < STAGE_ACCEPT_S + STAGE_PREP_S + STAGE_PACK_S:
             # Ensure cooking done and order moves to packing
             conn.execute(
                 "UPDATE order_items SET state='done', done_at=COALESCE(done_at, ?) WHERE order_id=? AND state!='done'",
-                ( (stage_anchor + datetime.timedelta(seconds=STAGE_PREP_S)).isoformat()+"Z", order_id)
+                ( (stage_anchor + datetime.timedelta(seconds=STAGE_ACCEPT_S + STAGE_PREP_S)).isoformat()+"Z", order_id)
             )
 
             if o["status"] != "packing":
                 conn.execute(
                     "UPDATE orders SET status='packing', cooking_done_at=?, packed_at=NULL WHERE id=?",
-                    ( (stage_anchor + datetime.timedelta(seconds=STAGE_PREP_S)).isoformat()+"Z", order_id)
+                    ( (stage_anchor + datetime.timedelta(seconds=STAGE_ACCEPT_S + STAGE_PREP_S)).isoformat()+"Z", order_id)
                 )
 
             # Mark packed_at when packing stage completes
             # Note: `o` is a sqlite3.Row, so use indexing not .get().
-            if o["packed_at"] is None and elapsed_s >= STAGE_PREP_S + STAGE_PACK_S:
+            if o["packed_at"] is None and elapsed_s >= STAGE_ACCEPT_S + STAGE_PREP_S + STAGE_PACK_S:
                 pass
 
 
         # Stage 3: SERVE window (+20s packing +20s serve)
         elif elapsed_s < STAGE_TOTAL_S:
             # Mark packed_at when entering serve stage
-            packed_done_at = stage_anchor + datetime.timedelta(seconds=STAGE_PREP_S + STAGE_PACK_S)
+            packed_done_at = stage_anchor + datetime.timedelta(seconds=STAGE_ACCEPT_S + STAGE_PREP_S + STAGE_PACK_S)
             conn.execute(
                 "UPDATE orders SET packed_at=? WHERE id=? AND packed_at IS NULL",
                 (packed_done_at.isoformat()+"Z", order_id)
@@ -402,7 +449,7 @@ def run_realtime_automation_step():
                        completed_at=COALESCE(completed_at, ?),
                        at_risk=0
                    WHERE id=?""",
-                ( (stage_anchor + datetime.timedelta(seconds=STAGE_PREP_S + STAGE_PACK_S)).isoformat()+"Z",
+                ( (stage_anchor + datetime.timedelta(seconds=STAGE_ACCEPT_S + STAGE_PREP_S + STAGE_PACK_S)).isoformat()+"Z",
                   completed_at.isoformat()+"Z",
                   order_id)
             )
@@ -455,25 +502,39 @@ def build_status():
 def build_station_load():
     conn = get_db()
     try:
+        now = _now_utc()
+        def serialize_item(row):
+            item = dict(row)
+            if item.get("state") == "cooking" and item.get("started_at"):
+                started = _parse_utc(item["started_at"])
+                elapsed = max(0, (now - started).total_seconds())
+                total = max(1, STAGE_PREP_S)
+                item["progress"] = min(100, int((elapsed / total) * 100))
+                item["remaining_sim_mins"] = max(0, math.ceil((total - elapsed) / 60))
+            else:
+                item["progress"] = 0
+            return item
+
         load = {}
         for station in STATIONS:
             cooking = conn.execute(
                 """SELECT oi.*, o.customer
                    FROM order_items oi JOIN orders o ON oi.order_id=o.id
-                   WHERE oi.station=? AND oi.state='cooking'""",
+                   WHERE oi.station=? AND oi.state='cooking' AND o.status!='completed'
+                   ORDER BY o.deadline_at ASC, oi.started_at ASC""",
                 (station,)
             ).fetchall()
             queued = conn.execute(
                 """SELECT oi.*, o.customer
                    FROM order_items oi JOIN orders o ON oi.order_id=o.id
-                   WHERE oi.station=? AND oi.state='queued'
+                   WHERE oi.station=? AND oi.state='queued' AND o.status IN ('accepted','preparing')
                    ORDER BY oi.sched_start ASC LIMIT 5""",
                 (station,)
             ).fetchall()
             load[station] = {
                 "capacity": STATIONS[station]["capacity"],
-                "cooking": [dict(r) for r in cooking],
-                "queued_next": [dict(r) for r in queued],
+                "cooking": [serialize_item(r) for r in cooking],
+                "queued_next": [serialize_item(r) for r in queued],
             }
         return load
     finally:
@@ -537,7 +598,7 @@ def build_agent_log():
         """SELECT o.id as order_id, o.customer, o.zone, oi.dish_name, oi.station, oi.state
            FROM orders o
            JOIN order_items oi ON oi.order_id=o.id
-           WHERE oi.state IN ('cooking','done')
+           WHERE oi.state IN ('queued','cooking','done') AND o.status IN ('accepted','preparing','packing')
            ORDER BY o.deadline_at ASC, oi.prep_time DESC
            LIMIT 6"""
     ).fetchall()
@@ -868,9 +929,10 @@ class KitchenHandler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     init_db()
+    remove_sample_orders()
     seed_db()
     run_scheduler()
-    server = HTTPServer(("0.0.0.0", PORT), KitchenHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", PORT), KitchenHandler)
     print(f"[server] Cloud Kitchen API running on http://localhost:{PORT}")
     print(f"[server] Dashboard:     GET  http://localhost:{PORT}/api/dashboard")
     print(f"[server] Order status:  GET  http://localhost:{PORT}/api/orders/status")

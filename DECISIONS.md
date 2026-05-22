@@ -98,3 +98,56 @@ Because we can’t guarantee accuracy after manual reorder:
 - Divergence: **recompute + at-risk flagging**
 - Manual reorder: **recompute + transparency/logging**
 
+# Kitchen Decisions (Why we schedule the way we do)
+
+This document explains the scheduling and estimation choices for the Cloud Kitchen simulation.
+
+The system is NOT a basic First Come First Serve (FCFS) kitchen queue.
+
+Instead, the project uses:
+- EDF (Earliest Deadline First)
+- Longest-Item Anchoring
+- Backward Synchronization
+- Station-Aware Scheduling
+- Multi-Agent Coordination
+- Real-Time Risk Detection
+
+The main goal is:
+- Deliver orders before deadlines
+- Ensure all dishes of the same order finish together
+- Prevent cold food
+- Reduce kitchen congestion
+- Automatically manage kitchen operations
+
+---
+
+# PROBLEM 1: HOW DO YOU DECIDE WHAT TO COOK NEXT?
+
+## Choice: Deadline-based hybrid using EDF (Earliest Deadline First) + station-aware scheduling.
+
+- Every order has a **deadline** derived from its delivery-zone SLA.
+- The scheduler prioritizes orders with the **earliest deadline first** (EDF).
+- Within those orders, the scheduler also respects:
+  - station capacity,
+  - currently cooking items,
+  - station availability timelines.
+
+The Scheduler Agent continuously recomputes:
+- item priorities,
+- estimated ready times,
+- risk states.
+
+---
+
+## Example
+
+| Order | Deadline |
+|---|---|
+| Order A | 10:25 |
+| Order B | 10:40 |
+| Order C | 10:50 |
+
+Priority becomes:
+
+```text
+A → B → C

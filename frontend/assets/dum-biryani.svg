@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" role="img" aria-label="Dum biryani handi">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2e1065"/>
+      <stop offset="1" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="rice" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset=".5" stop-color="#facc15"/>
+      <stop offset="1" stop-color="#fb923c"/>
+    </linearGradient>
+  </defs>
+  <rect width="420" height="280" fill="url(#bg)"/>
+  <circle cx="340" cy="62" r="64" fill="#c4b5fd" opacity=".16"/>
+  <path d="M136 105c6-42 142-42 148 0" fill="none" stroke="#e5e7eb" stroke-width="16" stroke-linecap="round" opacity=".55"/>
+  <ellipse cx="210" cy="219" rx="128" ry="25" fill="#111827" opacity=".35"/>
+  <path d="M95 114h230l-24 94c-7 29-43 49-91 49s-84-20-91-49l-24-94z" fill="#7c2d12"/>
+  <ellipse cx="210" cy="116" rx="120" ry="44" fill="#fed7aa"/>
+  <ellipse cx="210" cy="109" rx="101" ry="32" fill="url(#rice)"/>
+  <g stroke="#7c2d12" stroke-width="3" stroke-linecap="round" opacity=".55">
+    <path d="M146 98l28 18"/>
+    <path d="M188 84l24 31"/>
+    <path d="M244 91l-22 26"/>
+    <path d="M276 108l-34 7"/>
+  </g>
+  <g fill="#16a34a">
+    <ellipse cx="164" cy="88" rx="12" ry="5" transform="rotate(-22 164 88)"/>
+    <ellipse cx="238" cy="132" rx="11" ry="5" transform="rotate(18 238 132)"/>
+    <ellipse cx="286" cy="101" rx="10" ry="5" transform="rotate(-12 286 101)"/>
+  </g>
+  <g fill="#92400e">
+    <circle cx="181" cy="119" r="10"/>
+    <circle cx="254" cy="112" r="12"/>
+  </g>
+</svg>

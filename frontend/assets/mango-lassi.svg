@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" role="img" aria-label="Mango lassi glass">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#083344"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="420" height="280" fill="url(#bg)"/>
+  <circle cx="78" cy="210" r="72" fill="#22d3ee" opacity=".18"/>
+  <circle cx="346" cy="52" r="58" fill="#fef3c7" opacity=".2"/>
+  <ellipse cx="210" cy="230" rx="92" ry="18" fill="#111827" opacity=".35"/>
+  <path d="M142 62h136l-18 160c-2 20-24 34-50 34s-48-14-50-34L142 62z" fill="#e0f2fe" opacity=".45"/>
+  <path d="M154 82h112l-15 133c-1 16-19 27-41 27s-40-11-41-27L154 82z" fill="url(#glass)"/>
+  <ellipse cx="210" cy="82" rx="59" ry="18" fill="#fffbeb"/>
+  <ellipse cx="210" cy="83" rx="47" ry="11" fill="#facc15"/>
+  <path d="M258 35l-25 67" stroke="#f8fafc" stroke-width="8" stroke-linecap="round"/>
+  <path d="M254 33c19-16 40-13 53 4-19 16-40 13-53-4z" fill="#22c55e"/>
+  <g fill="#fef3c7" opacity=".8">
+    <circle cx="190" cy="129" r="8"/>
+    <circle cx="229" cy="158" r="6"/>
+    <circle cx="202" cy="195" r="7"/>
+  </g>
+</svg>
