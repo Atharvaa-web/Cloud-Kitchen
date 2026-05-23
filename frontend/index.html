@@ -1840,9 +1840,10 @@ body.dashboard-mode #hero {
 /* WebGL hero upgrade */
 #hero {
   background:
-    radial-gradient(circle at 50% 48%, rgba(255,255,255,0.08), transparent 28%),
-    radial-gradient(circle at 78% 22%, rgba(249,115,22,0.13), transparent 28%),
-    linear-gradient(135deg, #05070d 0%, #0a1018 48%, #120b12 100%);
+    radial-gradient(circle at 50% 46%, rgba(255,196,120,0.12), transparent 26%),
+    radial-gradient(circle at 76% 24%, rgba(255,132,46,0.16), transparent 30%),
+    radial-gradient(circle at 24% 72%, rgba(92,185,141,0.07), transparent 28%),
+    linear-gradient(135deg, #030304 0%, #090908 48%, #130d09 100%);
 }
 .hero-video-bg,
 .carousel-stage,
@@ -1851,31 +1852,91 @@ body.dashboard-mode #hero {
 }
 .hero-video-overlay {
   background:
-    linear-gradient(180deg, rgba(5,7,13,0.2) 0%, rgba(5,7,13,0.74) 86%),
-    radial-gradient(circle at 50% 50%, transparent 0%, rgba(5,7,13,0.62) 72%);
+    linear-gradient(90deg, rgba(3,3,4,0.7) 0%, rgba(3,3,4,0.18) 46%, rgba(3,3,4,0.62) 100%),
+    linear-gradient(180deg, rgba(3,3,4,0.08) 0%, rgba(3,3,4,0.76) 88%),
+    radial-gradient(circle at 50% 50%, transparent 0%, rgba(3,3,4,0.68) 74%);
 }
 .hero-webgl-stage {
   position: absolute;
   inset: 0;
   z-index: 2;
   cursor: grab;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 82%, rgba(255,255,255,0.08), transparent 28%),
+    radial-gradient(ellipse at 50% 58%, rgba(255,174,82,0.12), transparent 34%);
+}
+.hero-webgl-stage::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(108deg, transparent 0 38%, rgba(255,198,123,0.12) 45%, transparent 54%),
+    linear-gradient(72deg, transparent 0 46%, rgba(255,244,214,0.08) 51%, transparent 60%);
+  mix-blend-mode: screen;
+  opacity: .85;
+  animation: studio-beams 9s ease-in-out infinite alternate;
+}
+.hero-webgl-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 52%, transparent 0 42%, rgba(0,0,0,.62) 82%),
+    radial-gradient(circle at 68% 34%, rgba(255,180,82,.2), transparent 12%),
+    linear-gradient(180deg, rgba(255,255,255,.04), transparent 34%);
+}
+@keyframes studio-beams {
+  from { transform: translate3d(-2%, -1%, 0) rotate(-1deg); opacity: .7; }
+  to   { transform: translate3d(2%, 1%, 0) rotate(1deg); opacity: 1; }
 }
 .hero-webgl-stage:active { cursor: grabbing; }
 #hero-webgl {
   width: 100%;
   height: 100%;
   display: block;
+  position: relative;
+  z-index: 0;
 }
 .hero-content {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
   z-index: 6;
-  max-width: 860px;
-  transform: translateY(-8vh);
+  max-width: 780px;
+  width: min(92vw, 780px);
+  margin: 0 auto;
+  transform: none;
 }
 .hero-title {
-  text-shadow: 0 18px 52px rgba(0,0,0,0.46);
+  text-shadow: 0 22px 62px rgba(0,0,0,0.72);
+  font-size: clamp(28px, 3.8vw, 46px);
+  margin-bottom: 10px;
 }
 .hero-subtitle {
-  color: #b8c2dd;
+  color: #d8c7ad;
+  max-width: 560px;
+  margin-bottom: 18px;
+}
+.hero-title-line2 {
+  background: linear-gradient(135deg, #fff7db 0%, #ffbd68 48%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-eyebrow {
+  color: #ffd795;
+  border-color: rgba(255,183,84,0.34);
+  background: rgba(255,183,84,0.08);
+}
+.hero-eyebrow-dot {
+  background: #ffbd68;
+  box-shadow: 0 0 10px #ffbd68;
 }
 .hero-cta-row {
   position: relative;
@@ -1944,6 +2005,7 @@ body.dashboard-mode #hero {
 }
 @media (max-width: 900px) {
   .hero-content {
+    top: 34px;
     transform: none;
     padding-top: 42px;
   }
@@ -2022,7 +2084,7 @@ body.dashboard-mode #hero {
       <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260503_144509_89e2d612-8af2-45c3-90f4-4831bc60715d.mp4" type="video/mp4">
     </video>
     <div class="hero-video-overlay"></div>
-    <div class="hero-webgl-stage" id="hero-webgl-stage" aria-label="Interactive 3D exploding cloud kitchen plate">
+    <div class="hero-webgl-stage" id="hero-webgl-stage" aria-label="Interactive cinematic food explosion animation">
       <canvas id="hero-webgl"></canvas>
     </div>
     <div class="hero-bg-glow"></div>
@@ -2033,19 +2095,23 @@ body.dashboard-mode #hero {
     <div class="hero-content">
       <div class="hero-eyebrow">
         <span class="hero-eyebrow-dot"></span>
-        Multi-agents Powered Neural Kitchen
+       Multi-agents Powered Neural Kitchen
       </div>
       <h1 class="hero-title">
-        <span class="hero-title-line1">Shaping the Future</span>
-        <span class="hero-title-line2">of Cloud Kitchen Ops.</span>
+       <span class="hero-title-line1" style="color: #003b8b;">
+  Shaping the Future
+</span>
+        <span class="hero-title-line2" style="color: #ffffff;">
+  of Cloud Kitchen Ops.
+</span>
       </h1>
       <p class="hero-subtitle">
-        Multi-agent AI orchestration that schedules, tracks, and dispatches every dish — from tandoor to table, in real time.
+       Multi-agent AI orchestration that schedules, tracks, and dispatches every dish — from tandoor to table, in real time.
       </p>
       <div class="hero-cta-row">
         <button class="btn-hero-primary" id="hero-primary-cta" onclick="enterLiveDashboard()">Enter cloud kitchen</button>
-        <button class="btn-hero-secondary" onclick="enterLiveDashboard('history')">&#x1F4E6; View Order History</button>
-      </div>
+        <button class="btn-hero-secondary btn-hero-primary" onclick="enterLiveDashboard('history')"> View order history</button>
+     
     </div>
 
     <div class="carousel-stage" title="Hover to pause">
@@ -2457,101 +2523,225 @@ function initHero3D() {
   const stage = document.getElementById('hero-webgl-stage');
   if (!canvas3d || !stage || !window.THREE || !window.gsap) return null;
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-  camera.position.set(0, 1.9, 8.2);
+  scene.fog = new THREE.FogExp2(0x090704, 0.035);
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  camera.position.set(0, 1.35, 8.6);
   const renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true, alpha: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.18;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  const ambient = new THREE.HemisphereLight(0xfff7e8, 0x332018, 1.65);
-  const keyLight = new THREE.DirectionalLight(0xfff2df, 2.2);
-  keyLight.position.set(4, 6, 5);
+  const ambient = new THREE.HemisphereLight(0xffe8c8, 0x050302, 0.58);
+  const keyLight = new THREE.DirectionalLight(0xffe1b0, 2.65);
+  keyLight.position.set(-4.8, 4.6, 3.4);
   keyLight.castShadow = true;
-  const fillLight = new THREE.PointLight(0xffb35c, 1.6, 14);
-  fillLight.position.set(-2.8, 2.2, 4.5);
-  scene.add(ambient, keyLight, fillLight);
-  const group = new THREE.Group();
-  group.position.y = -0.25;
-  scene.add(group);
-  const plate = new THREE.Mesh(
-    new THREE.CylinderBufferGeometry(2.35, 2.5, 0.18, 96),
-    new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.48, metalness: 0.08 })
+  keyLight.shadow.mapSize.set(1024, 1024);
+  const backLight = new THREE.PointLight(0xff9b3d, 5.4, 18, 1.6);
+  backLight.position.set(0, 1.9, -4.2);
+  const rimLeft = new THREE.SpotLight(0xffbd68, 3.6, 16, 0.42, 0.55, 1.2);
+  rimLeft.position.set(-4.2, 2.4, -2.6);
+  rimLeft.target.position.set(0, 0.45, 0);
+  const fillLight = new THREE.PointLight(0xfff0d6, 0.72, 11);
+  fillLight.position.set(3.2, 1.4, 4.4);
+  scene.add(ambient, keyLight, backLight, rimLeft, rimLeft.target, fillLight);
+
+  const studio = new THREE.Group();
+  studio.position.y = -0.72;
+  scene.add(studio);
+
+  const floor = new THREE.Mesh(
+    new THREE.CircleBufferGeometry(7.2, 128),
+    new THREE.MeshStandardMaterial({ color: 0x090806, roughness: 0.32, metalness: 0.28, transparent: true, opacity: 0.82 })
   );
-  plate.receiveShadow = true;
-  group.add(plate);
-  const rim = new THREE.Mesh(
-    new THREE.TorusBufferGeometry(2.42, 0.055, 16, 128),
-    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.34, metalness: 0.1 })
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -1.05;
+  floor.receiveShadow = true;
+  studio.add(floor);
+
+  const ring = new THREE.Mesh(
+    new THREE.TorusBufferGeometry(2.05, 0.014, 12, 160),
+    new THREE.MeshBasicMaterial({ color: 0xffbd68, transparent: true, opacity: 0.42 })
   );
-  rim.rotation.x = Math.PI / 2;
-  rim.position.y = 0.13;
-  group.add(rim);
-  const fragmentCount = 72;
-  const fragmentGeometry = new THREE.DodecahedronBufferGeometry(0.13, 0);
-  const fragmentMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffb547,
-    emissive: 0x5c2608,
-    emissiveIntensity: 0.95,
-    roughness: 0.36,
-    metalness: 0.02,
-    vertexColors: true
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = -0.42;
+  studio.add(ring);
+
+  const mat = (color, opts = {}) => new THREE.MeshStandardMaterial({
+    color,
+    roughness: opts.roughness ?? 0.42,
+    metalness: opts.metalness ?? 0.03,
+    emissive: opts.emissive ?? 0x000000,
+    emissiveIntensity: opts.emissiveIntensity ?? 0,
+    transparent: opts.transparent ?? false,
+    opacity: opts.opacity ?? 1
   });
-  const fragments = new THREE.InstancedMesh(fragmentGeometry, fragmentMaterial, fragmentCount);
-  fragments.castShadow = true;
-  fragments.receiveShadow = true;
-  group.add(fragments);
-  const colors = [0xd94a2b, 0xffb547, 0xf8f2d4, 0x7fb069, 0xf97316, 0xffffff, 0xb45309];
-  const dummy = new THREE.Object3D();
-  const pieces = Array.from({ length: fragmentCount }, (_, i) => {
-    const angle = (i / fragmentCount) * Math.PI * 2;
-    const ring = 0.25 + Math.sqrt(Math.random()) * 1.25;
-    const base = {
-      x: Math.cos(angle) * ring * (0.75 + Math.random() * 0.35),
-      y: 0.25 + Math.random() * 0.62,
-      z: Math.sin(angle) * ring * 0.55,
-      rx: Math.random() * Math.PI,
-      ry: Math.random() * Math.PI,
-      rz: Math.random() * Math.PI,
-      s: 0.68 + Math.random() * 0.78
-    };
-    const burst = {
-      x: base.x + (Math.random() - 0.5) * 7.5,
-      y: base.y + 1.0 + Math.random() * 3.6,
-      z: base.z + (Math.random() - 0.5) * 5.8,
-      rx: base.rx + (Math.random() - 0.5) * Math.PI * 7,
-      ry: base.ry + (Math.random() - 0.5) * Math.PI * 7,
-      rz: base.rz + (Math.random() - 0.5) * Math.PI * 7,
-      s: base.s * (0.55 + Math.random() * 0.9)
-    };
-    fragments.setColorAt(i, new THREE.Color(colors[i % colors.length]));
-    return { ...base, base, burst };
+  const bun = mat(0xc97a2c, { roughness: 0.34 });
+  const toasted = mat(0x7a3517, { roughness: 0.48 });
+  const cheese = mat(0xffd65a, { roughness: 0.22 });
+  const tomato = mat(0xd63b28, { roughness: 0.28 });
+  const lettuce = mat(0x4fa64b, { roughness: 0.55 });
+  const crust = mat(0xb46b2d, { roughness: 0.4 });
+  const sauce = mat(0xc92d1f, { roughness: 0.18 });
+  const fries = mat(0xf7c45f, { roughness: 0.36 });
+  const herb = mat(0x63b14f, { roughness: 0.58 });
+  const steamMat = new THREE.MeshBasicMaterial({ color: 0xfff1d2, transparent: true, opacity: 0.15, depthWrite: false });
+  const dropMat = mat(0x9b1610, { roughness: 0.08, metalness: 0.02, emissive: 0x2b0604, emissiveIntensity: 0.22, transparent: true, opacity: 1 });
+  const glassMat = new THREE.MeshPhysicalMaterial({
+    color: 0xffe6bd,
+    roughness: 0.04,
+    metalness: 0,
+    transmission: 0.45,
+    transparent: true,
+    opacity: 0.34,
+    clearcoat: 1,
+    clearcoatRoughness: 0.04,
+    side: THREE.DoubleSide
   });
-  if (fragments.instanceColor) fragments.instanceColor.needsUpdate = true;
-  function writeMatrices() {
-    pieces.forEach((p, i) => {
-      dummy.position.set(p.x, p.y, p.z);
-      dummy.rotation.set(p.rx, p.ry, p.rz);
-      dummy.scale.setScalar(p.s);
-      dummy.updateMatrix();
-      fragments.setMatrixAt(i, dummy.matrix);
-    });
-    fragments.instanceMatrix.needsUpdate = true;
+
+  function mesh(geometry, material, parent, pos, scale, rot) {
+    const m = new THREE.Mesh(geometry, material);
+    m.position.set(pos?.[0] || 0, pos?.[1] || 0, pos?.[2] || 0);
+    m.scale.set(scale?.[0] || 1, scale?.[1] || 1, scale?.[2] || 1);
+    m.rotation.set(rot?.[0] || 0, rot?.[1] || 0, rot?.[2] || 0);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    parent.add(m);
+    return m;
   }
-  writeMatrices();
-  let exploded = false;
+
+  function makeBurger() {
+    const g = new THREE.Group();
+    mesh(new THREE.SphereBufferGeometry(0.58, 48, 22, 0, Math.PI * 2, 0, Math.PI / 2), bun, g, [0, .18, 0], [1, .46, .82]);
+    mesh(new THREE.CylinderBufferGeometry(.55, .57, .12, 48), lettuce, g, [0, -.02, 0], [1, .28, .9]);
+    mesh(new THREE.CylinderBufferGeometry(.52, .52, .09, 48), tomato, g, [0, -.11, 0], [1, .22, .86]);
+    mesh(new THREE.BoxBufferGeometry(.9, .055, .72), cheese, g, [0, -.2, 0], [1, 1, 1], [0, .12, .1]);
+    mesh(new THREE.CylinderBufferGeometry(.55, .58, .16, 48), toasted, g, [0, -.3, 0], [1, .38, .86]);
+    mesh(new THREE.SphereBufferGeometry(0.5, 48, 14, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), bun, g, [0, -.43, 0], [1, .24, .8]);
+    for (let i = 0; i < 26; i++) {
+      const a = Math.random() * Math.PI * 2;
+      mesh(new THREE.SphereBufferGeometry(.018, 8, 8), mat(0xffedc1, { roughness: .7 }), g, [Math.cos(a) * Math.random() * .42, .5 + Math.random() * .04, Math.sin(a) * Math.random() * .26], [1, .5, 1]);
+    }
+    return g;
+  }
+
+  function makePizza() {
+    const g = new THREE.Group();
+    const shape = new THREE.Shape();
+    shape.moveTo(0, .72);
+    shape.lineTo(-.5, -.55);
+    shape.lineTo(.5, -.55);
+    shape.lineTo(0, .72);
+    const geo = new THREE.ExtrudeBufferGeometry(shape, { depth: .065, bevelEnabled: true, bevelThickness: .018, bevelSize: .02, bevelSegments: 2 });
+    mesh(geo, cheese, g, [0, 0, 0], [1, 1, 1], [Math.PI / 2, 0, 0]);
+    mesh(new THREE.TorusBufferGeometry(.5, .055, 12, 42, Math.PI), crust, g, [0, .045, -.18], [1, .42, .18], [Math.PI / 2, 0, 0]);
+    for (let i = 0; i < 9; i++) {
+      mesh(new THREE.CylinderBufferGeometry(.055, .055, .018, 24), sauce, g, [(Math.random() - .5) * .48, .06, (Math.random() - .5) * .52], [1, 1, 1], [Math.PI / 2, 0, 0]);
+    }
+    return g;
+  }
+
+  function makeFries() {
+    const g = new THREE.Group();
+    for (let i = 0; i < 16; i++) {
+      mesh(new THREE.BoxBufferGeometry(.08, .72 + Math.random() * .28, .08), fries, g, [(Math.random() - .5) * .55, (Math.random() - .5) * .24, (Math.random() - .5) * .34], [1, 1, 1], [Math.random() * .7 - .35, Math.random() * .9 - .45, Math.random() * .55 - .28]);
+    }
+    return g;
+  }
+
+  function makeHerbSprig() {
+    const g = new THREE.Group();
+    mesh(new THREE.CylinderBufferGeometry(.014, .014, .72, 8), herb, g, [0, 0, 0], [1, 1, 1], [0, 0, .7]);
+    for (let i = 0; i < 8; i++) {
+      const side = i % 2 ? 1 : -1;
+      mesh(new THREE.SphereBufferGeometry(.07, 14, 8), herb, g, [side * .08, -.3 + i * .085, 0], [1.4, .45, .75], [0, 0, side * .8]);
+    }
+    return g;
+  }
+
+  const centralProduct = makeBurger();
+  centralProduct.scale.setScalar(1.52);
+  centralProduct.position.set(0, -0.18, 0);
+  studio.add(centralProduct);
+
+  const heroItems = [
+    { group: makeBurger(), angle: 0, radius: 1.48, y: .18, scale: 1.35, spin: .55 },
+    { group: makePizza(), angle: Math.PI * .45, radius: 1.9, y: .54, scale: 1.2, spin: -.68 },
+    { group: makeFries(), angle: Math.PI * .9, radius: 1.7, y: .25, scale: 1.1, spin: .72 },
+    { group: makeBurger(), angle: Math.PI * 1.32, radius: 2.08, y: -.08, scale: .92, spin: -.52 },
+    { group: makePizza(), angle: Math.PI * 1.68, radius: 1.62, y: .8, scale: .92, spin: .76 },
+    { group: makeHerbSprig(), angle: Math.PI * 1.9, radius: 2.22, y: .55, scale: 1.25, spin: -1.05 }
+  ];
+  heroItems.forEach((item) => {
+    item.group.scale.setScalar(item.scale);
+    studio.add(item.group);
+  });
+
+  const glassFragments = [];
+  for (let i = 0; i < 22; i++) {
+    const shardGeo = new THREE.TetrahedronBufferGeometry(0.08 + Math.random() * 0.11, 0);
+    const shard = mesh(shardGeo, glassMat.clone(), studio);
+    const angle = (i / 22) * Math.PI * 2 + Math.random() * 0.12;
+    glassFragments.push({
+      mesh: shard,
+      angle,
+      radius: 1.75 + Math.random() * 2.35,
+      y: -0.08 + Math.random() * 1.55,
+      speed: 0.18 + Math.random() * 0.28,
+      scale: 0.55 + Math.random() * 1.35
+    });
+  }
+
+  const sauceRibbons = [];
+  for (let i = 0; i < 9; i++) {
+    const ribbon = mesh(
+      new THREE.TorusBufferGeometry(0.28 + Math.random() * 0.22, 0.012, 8, 56, Math.PI * (0.55 + Math.random() * 0.5)),
+      dropMat.clone(),
+      studio
+    );
+    sauceRibbons.push({
+      mesh: ribbon,
+      angle: (i / 9) * Math.PI * 2,
+      radius: 1.15 + Math.random() * 1.8,
+      y: 0.08 + Math.random() * 1.2,
+      speed: 0.16 + Math.random() * 0.25
+    });
+  }
+
+  const particles = [];
+  const particleMats = [mat(0xf8d18b, { roughness: .66 }), herb, dropMat, mat(0xffffff, { roughness: .25 })];
+  for (let i = 0; i < 126; i++) {
+    const size = .015 + Math.random() * .055;
+    const p = mesh(new THREE.SphereBufferGeometry(size, 9, 7), particleMats[i % particleMats.length], studio);
+    const angle = Math.random() * Math.PI * 2;
+    particles.push({ mesh: p, angle, radius: 1.1 + Math.random() * 2.45, y: -.05 + Math.random() * 1.75, speed: .12 + Math.random() * .45, lift: Math.random() * .22 });
+  }
+  const smoke = [];
+  for (let i = 0; i < 18; i++) {
+    const s = mesh(new THREE.SphereBufferGeometry(.22 + Math.random() * .25, 16, 10), steamMat, studio);
+    smoke.push({ mesh: s, angle: Math.random() * Math.PI * 2, radius: .45 + Math.random() * 1.35, y: .35 + Math.random() * 1.3, speed: .06 + Math.random() * .08 });
+  }
+
+  let exploded = true;
   let rafId = 0;
   let mouseX = 0;
   let mouseY = 0;
   let settleTimer = 0;
-  const timeline = gsap.timeline({ paused: true });
-  pieces.forEach((p) => {
-    timeline.to(p, {
-      x: p.burst.x, y: p.burst.y, z: p.burst.z,
-      rx: p.burst.rx, ry: p.burst.ry, rz: p.burst.rz, s: p.burst.s,
-      duration: 1.05 + Math.random() * 0.38,
-      ease: 'power3.out'
-    }, 0);
-  });
+  const bloom = { value: 1 };
+  const timeline = gsap.timeline({ paused: true })
+    .to(bloom, { value: 1.18, duration: 1.8, ease: 'sine.inOut' }, 0)
+    .to(bloom, { value: 1, duration: 1.8, ease: 'sine.inOut' }, 1.8);
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+  const smoothstep = (edge0, edge1, x) => {
+    const t = clamp01((x - edge0) / (edge1 - edge0));
+    return t * t * (3 - 2 * t);
+  };
+  const burstAmount = (phase) => {
+    const out = smoothstep(0.12, 0.34, phase);
+    const back = 1 - smoothstep(0.78, 0.97, phase);
+    return Math.min(out, back);
+  };
   function resizeHero3D() {
     const rect = stage.getBoundingClientRect();
     const width = Math.max(1, rect.width);
@@ -2565,21 +2755,75 @@ function initHero3D() {
   function explode() {
     exploded = true;
     clearTimeout(settleTimer);
-    timeline.timeScale(1).play();
+    timeline.restart();
     settleTimer = setTimeout(implode, 3600);
   }
   function implode() {
-    exploded = false;
+    exploded = true;
     clearTimeout(settleTimer);
-    timeline.timeScale(1.35).reverse();
   }
   function animate() {
     rafId = requestAnimationFrame(animate);
-    group.rotation.x += (mouseY * 0.22 - group.rotation.x) * 0.045;
-    group.rotation.y += (mouseX * 0.32 - group.rotation.y) * 0.045;
-    group.rotation.z = Math.sin(performance.now() * 0.00045) * 0.025;
-    if (!exploded) group.position.y = -0.25 + Math.sin(performance.now() * 0.001) * 0.05;
-    writeMatrices();
+    const now = performance.now() * 0.001;
+    const slow = now * 0.28;
+    const phase = (now % 8.6) / 8.6;
+    const burst = burstAmount(phase);
+    const flare = Math.sin(clamp01((phase - 0.12) / 0.24) * Math.PI);
+    studio.rotation.y = slow * .38 + mouseX * .12 + burst * .38;
+    studio.rotation.x += (mouseY * .08 - studio.rotation.x) * .04;
+    camera.position.x = Math.sin(slow * .42 + burst * .9) * (.62 + burst * .7);
+    camera.position.z = 8.35 + Math.cos(slow * .42) * .34 - burst * 1.45;
+    camera.position.y = 1.25 + Math.sin(slow * .27) * .14 + burst * .16;
+    camera.lookAt(0, .22, 0);
+    ring.rotation.z = -now * .16;
+    ring.material.opacity = .22 + burst * .38;
+    renderer.toneMappingExposure = (1.08 + flare * .3) * bloom.value;
+    centralProduct.visible = burst < .98;
+    centralProduct.scale.setScalar(1.52 * (1 - burst * .62) + Math.sin(now * 1.8) * .018);
+    centralProduct.rotation.y = now * .1;
+    centralProduct.rotation.x = Math.sin(now * .45) * .04;
+    heroItems.forEach((item, i) => {
+      const a = item.angle + slow + Math.sin(now * .24 + i) * .08 + burst * .72;
+      const pulse = .92 + Math.sin(now * .52 + i * .7) * .06;
+      const r = (.1 + item.radius * pulse * burst);
+      item.group.position.set(Math.cos(a) * r, -0.08 + item.y * burst + Math.sin(now * .65 + i) * .12 * burst, Math.sin(a) * r * .56);
+      item.group.rotation.y = -a + Math.PI / 2 + now * item.spin;
+      item.group.rotation.x = Math.sin(now * .5 + i) * (.08 + burst * .22);
+      item.group.rotation.z = Math.cos(now * .42 + i) * (.06 + burst * .18);
+      item.group.scale.setScalar(item.scale * (.32 + burst * .68));
+    });
+    particles.forEach((p, i) => {
+      const a = p.angle + now * p.speed;
+      const drift = Math.sin(now * .7 + i) * .12;
+      const r = .12 + (p.radius + drift) * burst;
+      p.mesh.position.set(Math.cos(a) * r, .02 + p.y * burst + Math.sin(now * .8 + i) * p.lift, Math.sin(a) * r * .58);
+      p.mesh.rotation.set(now * p.speed * 2, now * p.speed * 1.5, now * p.speed);
+      p.mesh.scale.setScalar(.45 + burst * .9);
+    });
+    glassFragments.forEach((g, i) => {
+      const a = g.angle - now * g.speed;
+      const r = .2 + g.radius * burst;
+      g.mesh.position.set(Math.cos(a) * r, .08 + g.y * burst + Math.sin(now * .75 + i) * .18 * burst, Math.sin(a) * r * .62);
+      g.mesh.rotation.set(now * g.speed * 2.2 + i, now * g.speed * 1.7, -now * g.speed);
+      g.mesh.scale.setScalar(g.scale * burst);
+      g.mesh.material.opacity = .05 + burst * .34;
+    });
+    sauceRibbons.forEach((s, i) => {
+      const a = s.angle + now * s.speed;
+      const r = .14 + s.radius * burst;
+      s.mesh.position.set(Math.cos(a) * r, -0.04 + s.y * burst + Math.sin(now * .64 + i) * .12, Math.sin(a) * r * .54);
+      s.mesh.rotation.set(Math.PI / 2 + Math.sin(now + i) * .4, -a, now * s.speed * 1.8);
+      s.mesh.scale.setScalar(.12 + burst * .95);
+      s.mesh.material.opacity = .08 + burst * .92;
+    });
+    smoke.forEach((s, i) => {
+      const a = s.angle + now * s.speed;
+      const r = .18 + s.radius * (.45 + burst * .9);
+      s.mesh.position.set(Math.cos(a) * r, .12 + s.y * (.55 + burst * .45) + Math.sin(now * .42 + i) * .24, Math.sin(a) * r * .5);
+      const scale = 1 + Math.sin(now * .55 + i) * .22;
+      s.mesh.scale.set(scale * 1.8, scale * .75, scale);
+      s.mesh.material.opacity = .05 + burst * .1 + (Math.sin(now * .5 + i) + 1) * .025;
+    });
     renderer.render(scene, camera);
   }
   animate();
@@ -2597,12 +2841,13 @@ function initHero3D() {
     clearTimeout(settleTimer);
     window.removeEventListener('resize', resizeHero3D);
     timeline.kill();
-    fragmentGeometry.dispose();
-    fragmentMaterial.dispose();
-    plate.geometry.dispose();
-    plate.material.dispose();
-    rim.geometry.dispose();
-    rim.material.dispose();
+    studio.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+        else obj.material.dispose();
+      }
+    });
     renderer.dispose();
   }
   window.addEventListener('beforeunload', destroy, { once: true });
