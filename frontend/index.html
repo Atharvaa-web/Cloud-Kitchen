@@ -895,77 +895,301 @@ nav {
 /* ═══════════════════════════════════════
    HERO SECTION — 3D CINEMATIC CAROUSEL
 ═══════════════════════════════════════ */
-#hero {
+/* ─────────────────────────────────────────
+   FIXED RESPONSIVE HERO SECTION
+───────────────────────────────────────── */
+
+#hero { 
   position: relative;
   width: 100%;
-  height: 100vh;
-  min-height: 700px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 60%, rgba(99,102,241,0.08) 0%, transparent 70%),
-              radial-gradient(ellipse at 80% 20%, rgba(6,182,212,0.06) 0%, transparent 50%),
-              radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.05) 0%, transparent 50%);
+  padding: 90px 20px 40px;
+  background: radial-gradient(
+                ellipse at 50% 60%, 
+                rgba(99,102,241,0.08) 0%, 
+                transparent 70%
+              ),
+              radial-gradient(
+                ellipse at 80% 20%, 
+                rgba(6,182,212,0.06) 0%, 
+                transparent 50%
+              ),
+              radial-gradient(
+                ellipse at 20% 80%, 
+                rgba(139,92,246,0.05) 0%, 
+                transparent 50%
+              );
 }
 
+/* HERO CONTENT */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1200px;
+  text-align: center;
+  margin: 0 auto;
+
+  /* move content upward */
+  transform: translateY(-80px);
+
+  padding: 0 20px;
+  animation: hero-text-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* tablet adjustment */
+@media (max-width: 992px) {
+  .hero-content {
+    transform: translateY(-50px);
+  }
+}
+
+/* mobile adjustment */
+@media (max-width: 768px) {
+  .hero-content {
+    transform: translateY(-30px);
+    padding: 0 16px;
+  }
+}
+/* RESPONSIVE HERO TITLE FIX */
+.hero-title {
+  font-size: clamp(24px, 4vw, 48px) !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.8px !important;
+
+  margin-bottom: 14px !important;
+
+  word-break: break-word;
+  text-align: center;
+
+  /* smooth appearance */
+  animation: heroTitleUp 1s ease-out forwards;
+}
+
+/* animation */
+@keyframes heroTitleUp {
+  0% {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* tablet */
+@media (max-width: 992px) {
+  .hero-title {
+    font-size: clamp(22px, 5vw, 40px) !important;
+  }
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: clamp(20px, 7vw, 32px) !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.5px !important;
+  }
+}
+/* RESPONSIVE SUBTITLE */
+.hero-subtitle {
+  width: 100%;
+  max-width: 700px;
+
+  /* moves subtitle upward */
+  margin: -38px auto 28px;
+
+  font-size: clamp(14px, 1.5vw, 18px);
+
+  /* make bold */
+  font-weight: 800;
+
+  line-height: 1.7;
+
+  padding: 0 10px;
+
+  /* smooth upward transition */
+  animation: subtitleUp 1s ease forwards;
+}
+
+@keyframes subtitleUp {
+  from {
+    opacity: 0;
+    transform: translateY(45px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* BUTTON ROW */
+.hero-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* BUTTONS */
+.btn-hero-primary,
+.btn-hero-secondary {
+  min-width: 220px;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* GLOW FIX */
 .hero-bg-glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
 }
+
 .hero-bg-glow::before {
   content: '';
   position: absolute;
-  width: 800px; height: 800px;
+  width: min(700px, 85vw);
+  height: min(700px, 85vw);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
-  top: 50%; left: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(99,102,241,0.06) 0%,
+    transparent 70%
+  );
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   animation: hero-glow-pulse 4s ease-in-out infinite alternate;
 }
-@keyframes hero-glow-pulse {
-  from { transform: translate(-50%,-50%) scale(1); opacity: 0.7; }
-  to   { transform: translate(-50%,-50%) scale(1.15); opacity: 1; }
+
+/* MOBILE FIXES */
+@media (max-width: 768px) {
+
+  #hero {
+    min-height: auto;
+    padding: 80px 16px 50px;
+    justify-content: center;
+  }
+
+  .hero-content {
+    padding: 0;
+  }
+
+  .hero-title {
+    font-size: clamp(30px, 9vw, 46px);
+    line-height: 1.12;
+    letter-spacing: -1px;
+    margin-bottom: 14px;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .hero-cta-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    width: 100%;
+    max-width: 320px;
+  }
 }
 
-/* Cinematic vignette */
-#hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(6,8,16,0.6) 100%);
-  pointer-events: none;
-  z-index: 1;
+/* SMALL LAPTOP FIX */
+@media (max-width: 1366px) {
+
+  #hero {
+    padding-top: 75px;
+    padding-bottom: 34px;
+    min-height: 80vh;
+    align-items: center;
+    justify-content: center;
+  }   
+
+  .hero-scroll-hint {
+    position: absolute;
+    bottom: 22px;
+  }
+
+                                                                                                                          
+
+  .hero-title {
+    font-size: clamp(34px, 4.1vw, 54px);
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+    margin-bottom: 22px;
+  }
+
+  .carousel-stage {
+    height: 300px;
+  }
+
+  .food-card-3d {
+    width: clamp(150px, 16vw, 185px);
+    height: clamp(190px, 20vw, 230px);
+  }
 }
 
-/* Scanline effect */
-.hero-scanlines {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(99,102,241,0.012) 2px,
-    rgba(99,102,241,0.012) 4px
-  );
-  pointer-events: none;
-  z-index: 1;
+
+/* VERY SMALL DEVICES */
+@media (max-width: 480px) {
+
+  #hero {
+    padding: 75px 14px 40px;
+  }
+
+  .hero-title {
+    font-size: 30px;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+  }
 }
 
-.hero-content {
-  position: relative;
-  z-index: 10;
-  text-align: center;
-  margin-bottom: 40px;
-  animation: hero-text-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
+/* ANIMATION */
 @keyframes hero-text-in {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-glow-pulse {
+
+  from {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.7;
+  }
+
+  to {
+    transform: translate(-50%, -50%) scale(1.12);
+    opacity: 1;
+  }
 }
 
 .hero-eyebrow {
@@ -1418,6 +1642,8 @@ nav {
 body.landing-mode {
   overflow: hidden;
 }
+
+
 body.landing-mode nav,
 body.landing-mode .page {
   display: none !important;
@@ -1574,16 +1800,16 @@ body.dashboard-mode #hero {
   gap: 14px;
 }
 .hero-content {
-  margin-bottom: 10px;
+  margin-top: 10px;
 }
 .hero-title {
   font-size: clamp(34px, 5vw, 58px);
   line-height: 1.02;
-  margin-bottom: 14px;
+  scroll-margin-top: 14px;
 }
 .hero-subtitle {
   font-size: 15px;
-  margin-bottom: 22px;
+  margin-top: 22px;
 }
 .carousel-stage {
   width: min(100%, 980px);
@@ -1904,23 +2130,24 @@ body.dashboard-mode #hero {
 }
 .hero-content {
   position: absolute;
-  top: 24px;
-  left: 0;
-  right: 0;
+  top: 56px;
+  left: 42px;
+  right: auto;
   z-index: 6;
-  max-width: 780px;
-  width: min(92vw, 780px);
-  margin: 0 auto;
+  max-width: 520px;
+  width: min(42vw, 520px);
+  margin: 0;
   transform: none;
+  text-align: left;
 }
 .hero-title {
   text-shadow: 0 22px 62px rgba(0,0,0,0.72);
-  font-size: clamp(28px, 3.8vw, 46px);
+  font-size: clamp(30px, 3.5vw, 52px);
   margin-bottom: 10px;
 }
 .hero-subtitle {
   color: #d8c7ad;
-  max-width: 560px;
+  max-width: 500px;
   margin-bottom: 18px;
 }
 .hero-title-line2 {
@@ -1941,9 +2168,12 @@ body.dashboard-mode #hero {
 .hero-cta-row {
   position: relative;
   z-index: 8;
+  justify-content: flex-start;
 }
 .hero-scroll-hint {
   z-index: 7;
+  bottom: 28px;
+  top: auto;
 }
 .live-kitchen-strip {
   margin: 18px 28px 0;
@@ -2004,11 +2234,61 @@ body.dashboard-mode #hero {
   position: relative;
 }
 @media (max-width: 900px) {
-  .hero-content {
-    top: 34px;
-    transform: none;
-    padding-top: 42px;
+  /* ========================================
+   FINAL WORKING HERO CONTENT FIX
+   Paste THIS BELOW ALL hero-content CSS
+======================================== */
+
+#hero {
+  position: relative !important;
+}
+
+.hero-content {
+  position: absolute !important;
+  top: 8% !important;
+  left: 50% !important;
+
+  transform: translateX(-50%) !important;
+
+  width: 100% !important;
+  max-width: 1200px !important;
+
+  z-index: 9999 !important;
+
+  text-align: center !important;
+  padding: 0 20px !important;
+
+  /* animation */
+  animation: heroUp 1.2s ease-out forwards !important;
+}
+
+/* FORCE ANIMATION */
+@keyframes heroUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 120px);
   }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0px);
+  }
+}
+
+/* tablet */
+@media (max-width: 992px) {
+  .hero-content {
+    top: 5% !important;
+  }
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .hero-content {
+    top: 2% !important;
+    padding: 0 16px !important;
+  }
+}
   .hero-webgl-stage {
     top: 18%;
   }
@@ -2019,6 +2299,513 @@ body.dashboard-mode #hero {
 @media (max-width: 720px) {
   .live-kitchen-strip {
     margin: 14px 14px 0;
+  }
+}
+
+/* Cinematic Cloud Kitchen image reveal */
+body.landing-mode {
+  background: #050817;
+}
+
+body.landing-mode .orb,
+body.landing-mode #food-particles,
+body.landing-mode #bg-canvas {
+  display: none !important;
+}
+
+body.landing-mode .grid-overlay {
+  background-image:
+    linear-gradient(rgba(91, 164, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 164, 255, 0.055) 1px, transparent 1px);
+  background-size: 76px 76px;
+  mask-image: radial-gradient(circle at 72% 48%, black 0%, transparent 74%);
+}
+
+#hero {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 73% 45%, rgba(53, 126, 255, 0.2), transparent 32%),
+    radial-gradient(circle at 38% 34%, rgba(31, 220, 255, 0.105), transparent 28%),
+    linear-gradient(90deg, rgba(5, 8, 23, 0.98) 0%, rgba(5, 8, 23, 0.82) 38%, rgba(5, 8, 23, 0.2) 100%),
+    #050817 !important;
+}
+
+#hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(91, 164, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 164, 255, 0.055) 1px, transparent 1px);
+  background-size: 76px 76px;
+  mask-image: radial-gradient(circle at 72% 48%, black 0%, transparent 74%);
+}
+
+#hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(100deg, transparent 0 42%, rgba(112, 203, 255, 0.08) 49%, transparent 58%),
+    radial-gradient(ellipse at 68% 84%, rgba(32, 84, 190, 0.18), transparent 32%),
+    radial-gradient(ellipse at 70% 46%, transparent 0 44%, rgba(2, 5, 15, 0.68) 78%);
+  opacity: 0.95;
+}
+
+.hero-video-bg,
+.hero-video-overlay,
+.hero-bg-glow,
+.hero-scanlines,
+.carousel-stage,
+.orbit-ring,
+#hero-webgl {
+  display: none !important;
+}
+
+.hero-webgl-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 72% 83%, rgba(11, 25, 60, 0.86), transparent 35%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 38%);
+  cursor: default;
+}
+
+.hero-webgl-stage::before {
+  content: '';
+  position: absolute;
+  left: 38%;
+  top: -18%;
+  width: 21%;
+  height: 132%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(82, 172, 255, 0.12), transparent);
+  filter: blur(14px);
+  transform: skewX(-11deg);
+  opacity: 0.54;
+}
+
+.hero-webgl-stage::after {
+  content: '';
+  position: absolute;
+  right: 2.4%;
+  bottom: -12%;
+  width: 58%;
+  height: 34%;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(14, 33, 78, 0.96), rgba(4, 9, 25, 0.18) 66%, transparent 72%);
+  transform: rotate(2deg);
+}
+
+.cinematic-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  perspective: 1600px;
+}
+
+/* =========================================
+   PREMIUM WAVY ORBIT RING
+   Smooth liquid wave matching dark theme
+========================================= */
+
+.menu-orbit {
+  position: absolute;
+
+  left: 66%;
+  top: 51%;
+
+  width: min(45vw, 660px);
+  height: min(45vw, 660px);
+
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+
+  border-radius: 50%;
+
+  z-index: 50;
+  overflow: visible;
+
+  animation: orbitFloat 6s ease-in-out infinite;
+}
+
+/* SMOOTH WAVY LIGHT */
+.menu-orbit::before {
+  content: "";
+
+  position: absolute;
+
+  /* keeps ring near center */
+  inset: 18%;
+
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  z-index: -1;
+
+  /* DARK THEME WAVY COLORS */
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 250deg,
+
+      rgba(99,102,241,0.00) 265deg,
+      rgba(99,102,241,0.45) 285deg,
+      rgba(6,182,212,0.85) 305deg,
+      rgba(139,92,246,0.95) 325deg,
+      rgba(6,182,212,0.75) 340deg,
+      rgba(99,102,241,0.25) 350deg,
+
+      transparent 360deg
+    );
+
+  filter: blur(10px);
+
+  opacity: 0.95;
+
+  animation: smoothWaveSpin 8s linear infinite;
+}
+
+/* STATIC CLEAN RING */
+.menu-orbit::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 18%;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(255,255,255,0.05);
+
+  box-shadow:
+    0 0 18px rgba(99,102,241,0.12),
+    0 0 40px rgba(6,182,212,0.08);
+
+  pointer-events: none;
+
+  z-index: -2;
+}
+
+/* FLOATING EFFECT */
+@keyframes orbitFloat {
+  0%,100% {
+    transform: translate(-50%, -50%) translateY(0px);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateY(-8px);
+  }
+}
+
+/* SMOOTH WAVE ROTATION */
+@keyframes smoothWaveSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+  .menu-orbit {
+    width: min(58vw, 520px);
+    height: min(58vw, 520px);
+
+    left: 50%;
+    top: 55%;
+  }
+}
+
+@media (max-width: 768px) {
+  .menu-orbit {
+    width: min(82vw, 400px);
+    height: min(82vw, 400px);
+
+    left: 50%;
+    top: 58%;
+  }
+}
+
+.hero-burger-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(23vw, 330px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  opacity: 0.72;
+  filter: saturate(0.96) contrast(1.08) brightness(0.72) drop-shadow(0 34px 74px rgba(0, 0, 0, 0.58));
+  box-shadow:
+    0 42px 96px rgba(0, 0, 0, 0.56),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.hero-burger-core img,
+.menu-image-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-burger-core::after,
+.menu-image-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(110deg, rgba(255,255,255,0.22), transparent 28%, transparent 72%, rgba(93, 151, 255, 0.16)),
+    radial-gradient(circle at 76% 18%, rgba(103, 177, 255, 0.24), transparent 28%),
+    linear-gradient(180deg, transparent 48%, rgba(2, 7, 22, 0.42));
+  mix-blend-mode: screen;
+}
+
+.menu-image-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(102px, 11vw, 178px);
+  aspect-ratio: 1 / 1.18;
+  border: 1px solid rgba(134, 208, 255, 0.28);
+  border-radius: 8px;
+  background: rgba(5, 14, 34, 0.62);
+  box-shadow:
+    0 30px 76px rgba(0, 0, 0, 0.52),
+    0 0 38px rgba(70, 146, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.34) rotate(var(--start-rot));
+  transform-origin: center;
+  will-change: transform, opacity, filter;
+}
+
+.cinematic-reveal.css-only .menu-image-card {
+  animation: menu-card-cinematic 4.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.cinematic-reveal.css-only .menu-image-card:nth-of-type(2) { animation-delay: 0.04s; }
+.cinematic-reveal.css-only .menu-image-card:nth-of-type(3) { animation-delay: 0.08s; }
+.cinematic-reveal.css-only .menu-image-card:nth-of-type(4) { animation-delay: 0.12s; }
+.cinematic-reveal.css-only .menu-image-card:nth-of-type(5) { animation-delay: 0.16s; }
+.cinematic-reveal.css-only .menu-image-card:nth-of-type(6) { animation-delay: 0.2s; }
+.cinematic-reveal.css-only .menu-image-card:nth-of-type(7) { animation-delay: 0.24s; }
+
+.cinematic-reveal.css-only .hero-burger-core {
+  animation: burger-core-breathe 4.4s ease-in-out infinite;
+}
+
+@keyframes menu-card-cinematic {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.34) rotate(var(--start-rot));
+    filter: blur(10px) saturate(0.7) brightness(0.52);
+  }
+  14%, 78% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(var(--x), var(--y)) scale(1) rotate(var(--r));
+    filter: blur(0) saturate(1.06) brightness(0.95);
+  }
+  88%, 100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.34) rotate(var(--start-rot));
+    filter: blur(10px) saturate(0.7) brightness(0.52);
+  }
+}
+
+@keyframes burger-core-breathe {
+  0%, 100% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(0.96) rotate(-2deg);
+  }
+  14%, 78% {
+    opacity: 0.84;
+    transform: translate(-50%, -50%) scale(1.08) rotate(1deg);
+  }
+}
+
+.menu-image-card img {
+  filter: saturate(1.02) contrast(1.04) brightness(0.88);
+}
+
+.menu-image-card.wide {
+  aspect-ratio: 1.34 / 1;
+  width: clamp(132px, 14vw, 220px);
+}
+
+.menu-image-card.tall {
+  aspect-ratio: 0.72 / 1;
+  width: clamp(92px, 9vw, 150px);
+}
+
+.menu-label {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  min-width: 84px;
+  max-width: 94%;
+  border: 1px solid rgba(139, 231, 255, 0.38);
+  border-radius: 999px;
+  background: rgba(6, 16, 39, 0.66);
+  color: rgba(238, 247, 255, 0.94);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: 8px 10px;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  backdrop-filter: blur(14px);
+}
+
+.hero-content {
+  position: absolute;
+  top: 50%;
+  left: 5.6vw;
+  z-index: 8;
+  width: min(42vw, 520px);
+  max-width: 520px;
+  transform: translateY(-50%);
+  margin: 0;
+  text-align: left;
+}
+
+.hero-eyebrow {
+  width: max-content;
+  border: 1px solid rgba(136, 211, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(7, 18, 43, 0.42);
+  color: #d8f3ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.hero-eyebrow-dot {
+  background: #8be7ff;
+  box-shadow: 0 0 18px rgba(139, 231, 255, 0.92);
+}
+
+.hero-title {
+  color: #f4fbff;
+  font-size: clamp(58px, 6.6vw, 96px);
+  line-height: 0.96;
+  letter-spacing: 0;
+  text-shadow: 0 22px 62px rgba(0,0,0,0.72);
+}
+
+.hero-title-line1,
+.hero-title-line2 {
+  display: inline-block;   /* keeps them next to each other */
+  color: #f4fbff !important;
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+
+  /* reduced text size */
+  font-size: clamp(1.8rem, 4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+
+  margin: 0;
+  padding: 0;
+}
+
+/* spacing between line1 and line2 */
+.hero-title-line1 {
+  margin-right: 12px;
+}
+
+/* mobile responsiveness */
+@media (max-width: 768px) {
+  .hero-title-line1,
+  .hero-title-line2 {
+    font-size: clamp(1.4rem, 7vw, 2.2rem);
+    line-height: 1.2;
+  }
+
+  .hero-title-line1 {
+    margin-right: 8px;
+  }
+}
+
+.hero-subtitle {
+  max-width: 560px;
+  color: #c9d8ef;
+  font-size: 20px;
+  line-height: 1.42;
+}
+
+.btn-hero-primary {
+  min-height: 56px;
+  border-radius: 999px;
+  background: #6ab8ff;
+  color: #051023;
+  box-shadow:
+    0 20px 48px rgba(36, 125, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
+}
+
+.btn-hero-primary:hover {
+  background: #9feaff;
+}
+
+.btn-hero-secondary {
+  border: 1px solid rgba(136, 211, 255, 0.16);
+  background: rgba(7, 18, 43, 0.42);
+  color: #ccdcf4;
+}
+
+.hero-scroll-hint {
+  z-index: 8;
+}
+
+@media (max-width: 900px) {
+  #hero {
+    min-height: 900px;
+  }
+
+  .hero-content {
+    top: 78px;
+    left: 24px;
+    right: 24px;
+    width: auto;
+    transform: none;
+    text-align: left;
+  }
+
+  .hero-title {
+    font-size: clamp(42px, 12vw, 64px);
+  }
+
+  .menu-orbit {
+    left: 50%;
+    top: 61%;
+    width: min(92vw, 560px);
+    height: min(92vw, 560px);
+  }
+
+  .hero-burger-core {
+    width: min(48vw, 280px);
   }
 }
 </style>
@@ -2086,33 +2873,81 @@ body.dashboard-mode #hero {
     <div class="hero-video-overlay"></div>
     <div class="hero-webgl-stage" id="hero-webgl-stage" aria-label="Interactive cinematic food explosion animation">
       <canvas id="hero-webgl"></canvas>
+      <div class="cinematic-reveal" id="cinematic-reveal" aria-hidden="true">
+        <div class="menu-orbit" id="menu-orbit">
+          <div class="hero-burger-core" id="hero-burger-core">
+            <img src="/assets/cinematic-menu/burger.avif" alt="" onerror="this.src='/assets/cinematic-menu/tacos.jpg'">
+
+          </div>
+          <figure class="menu-image-card wide" style="--x:-245px;--y:-118px;--r:-12deg;--start-rot:-28deg">
+            <img src="/assets/cinematic-menu/tacos.jpg" alt="">
+            <figcaption class="menu-label">Tacos</figcaption>
+          </figure>
+          <figure class="menu-image-card wide" style="--x:252px;--y:-104px;--r:13deg;--start-rot:24deg">
+            <img src="/assets/cinematic-menu/fries-overhead.png" alt="" onerror="this.style.display='none'">
+
+            <figcaption class="menu-label">Fries</figcaption>
+          </figure>
+          <figure class="menu-image-card tall" style="--x:312px;--y:82px;--r:18deg;--start-rot:34deg">
+            <img src="/assets/cinematic-menu/diet-coke.jpeg" alt="">
+            <figcaption class="menu-label">Coke</figcaption>
+          </figure>
+          <figure class="menu-image-card tall" style="--x:155px;--y:230px;--r:10deg;--start-rot:18deg">
+            <img src="/assets/cinematic-menu/margherita.jpeg" alt="">
+            <figcaption class="menu-label">Pizza</figcaption>
+          </figure>
+          <figure class="menu-image-card tall" style="--x:-145px;--y:234px;--r:-10deg;--start-rot:-18deg">
+            <img src="/assets/cinematic-menu/plain-fries.jpeg" alt="">
+            <figcaption class="menu-label">Loaded Fries</figcaption>
+          </figure>
+          <figure class="menu-image-card tall" style="--x:-312px;--y:78px;--r:-18deg;--start-rot:-32deg">
+            <img src="/assets/cinematic-menu/loaded-fries.jpg" alt="">
+            <figcaption class="menu-label">Classic Fries</figcaption>
+          </figure>
+          <figure class="menu-image-card" style="--x:0px;--y:-274px;--r:0deg;--start-rot:8deg">
+            <img src="/assets/cinematic-menu/cake-slice.jpeg" alt="">
+            <figcaption class="menu-label">Cheesecake</figcaption>
+          </figure>
+        </div>
+      </div>
     </div>
     <div class="hero-bg-glow"></div>
     <div class="hero-scanlines"></div>
     <div class="orbit-ring orbit-ring-1"></div>
     <div class="orbit-ring orbit-ring-2"></div>
 
-    <div class="hero-content">
+   <div class="hero-content" style="position:absolute; top:20px; left:20px; width:100%; z-index:9999; text-align:left;">
+      
       <div class="hero-eyebrow">
         <span class="hero-eyebrow-dot"></span>
-       Multi-agents Powered Neural Kitchen
+        Multi-agents Powered Neural Kitchen
       </div>
-      <h1 class="hero-title">
-       <span class="hero-title-line1" style="color: #003b8b;">
-  Shaping the Future
-</span>
-        <span class="hero-title-line2" style="color: #ffffff;">
-  of Cloud Kitchen Ops.
-</span>
-      </h1>
-      <p class="hero-subtitle">
-       Multi-agent AI orchestration that schedules, tracks, and dispatches every dish — from tandoor to table, in real time.
-      </p>
-      <div class="hero-cta-row">
-        <button class="btn-hero-primary" id="hero-primary-cta" onclick="enterLiveDashboard()">Enter cloud kitchen</button>
-        <button class="btn-hero-secondary btn-hero-primary" onclick="enterLiveDashboard('history')"> View order history</button>
-     
+
+     <div class="hero-title">
+  <span class="hero-title-line1"><p>Shaping the Future</p></span>
+  <span class="hero-title-line1" style="display:block; margin-bottom:35px;">
+    of Cloud Kitchen Ops.
+  </span>
+
+  <div>
+    <div class="hero-cta-row">
+      <button class="btn-hero-primary" id="hero-primary-cta" onclick="enterLiveDashboard()">
+        Enter Cloud Kitchen
+      </button>
+
+      <button class="btn-hero-secondary" onclick="enterLiveDashboard('history')">
+        View&nbsp;&nbsp;|&nbsp;&nbsp;Order History
+      </button>
     </div>
+  </div>
+
+</div>
+
+      <p class="hero-subtitle">
+      Multi-agent AI orchestration that schedules,tracks,and dispatches every dish — from tandoor to table, in real time.
+      </p>
+
+</div>
 
     <div class="carousel-stage" title="Hover to pause">
       <div class="carousel-track" id="carousel-track">
@@ -2129,8 +2964,8 @@ body.dashboard-mode #hero {
             <span class="explode-fragment" style="left:20%;top:28%;--tx:-58px;--ty:-46px;--rot:210deg;animation-delay:.1s"></span>
             <span class="explode-fragment" style="left:78%;top:34%;--tx:66px;--ty:-34px;--rot:140deg;animation-delay:.25s"></span>
             <span class="explode-fragment" style="left:45%;top:62%;--tx:-26px;--ty:58px;--rot:310deg;animation-delay:.42s"></span>
-            <div class="card-particle" style="left:20%;animation-delay:0s;animation-duration:3.5s"></div>
-            <div class="card-particle" style="left:50%;animation-delay:1.2s;animation-duration:4s"></div>
+            <div class="card-particle" style="left:20%;animation-delay:0s;animation-duration:2s"></div>
+            <div class="card-particle" style="left:50%;animation-delay:1.2s;animation-duration:2s"></div>
             <div class="card-particle" style="left:75%;animation-delay:2.1s;animation-duration:3s"></div>
           </div>
         </div>
@@ -2452,6 +3287,7 @@ window.addEventListener('scroll', () => {
   const newScroll = window.scrollY;
   const delta     = Math.abs(newScroll - scrollY);
   scrollY = newScroll;
+  return;
 
   if (delta > 5) {
     for (let i = 0; i < Math.min(3, Math.floor(delta / 8)); i++) {
@@ -2493,6 +3329,7 @@ animateCanvas();
 //  FOOD PARTICLES (floating emojis in BG)
 // ══════════════════════════════════════════════
 function spawnFoodParticle() {
+  return;
   const el   = document.createElement('div');
   el.className = 'food-particle';
   el.textContent = FOOD_PARTICLES[Math.floor(Math.random() * FOOD_PARTICLES.length)];
@@ -2853,7 +3690,488 @@ function initHero3D() {
   window.addEventListener('beforeunload', destroy, { once: true });
   return { explode, implode, destroy };
 }
-hero3dApi = initHero3D();
+function initLuxuryFoodExplosion() {
+  const canvas3d = document.getElementById('hero-webgl');
+  const stage = document.getElementById('hero-webgl-stage');
+  if (!canvas3d || !stage || !window.THREE || !window.gsap) return initHero3D();
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x050403, 0.028);
+
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  camera.position.set(0, 1.15, 8.1);
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas: canvas3d,
+    antialias: true,
+    alpha: true,
+    powerPreference: 'high-performance'
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.12;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.physicallyCorrectLights = true;
+
+  const hemi = new THREE.HemisphereLight(0xffead2, 0x050303, 0.42);
+  const key = new THREE.DirectionalLight(0xffe3bd, 3.4);
+  key.position.set(-3.9, 3.8, 3.2);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.camera.near = 0.5;
+  key.shadow.camera.far = 20;
+  const rim = new THREE.PointLight(0xffa13a, 4.8, 16, 1.8);
+  rim.position.set(1.8, 1.9, -4.4);
+  const side = new THREE.SpotLight(0xffc98b, 3.2, 18, 0.48, 0.65, 1.2);
+  side.position.set(-4.6, 2.25, -1.4);
+  side.target.position.set(0, 0.05, 0);
+  const softFill = new THREE.PointLight(0xfff5df, 0.56, 10);
+  softFill.position.set(3.4, 1.1, 3.6);
+  scene.add(hemi, key, rim, side, side.target, softFill);
+
+  const studio = new THREE.Group();
+  studio.position.y = -0.56;
+  scene.add(studio);
+
+  const floor = new THREE.Mesh(
+    new THREE.CircleBufferGeometry(7.8, 160),
+    new THREE.MeshStandardMaterial({ color: 0x060504, roughness: 0.24, metalness: 0.18 })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -1.02;
+  floor.receiveShadow = true;
+  studio.add(floor);
+
+  const reflection = new THREE.Mesh(
+    new THREE.RingBufferGeometry(1.35, 3.4, 192),
+    new THREE.MeshBasicMaterial({ color: 0xffc27a, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+  );
+  reflection.rotation.x = -Math.PI / 2;
+  reflection.position.y = -1.005;
+  studio.add(reflection);
+
+  function material(color, opts = {}) {
+    return new THREE.MeshStandardMaterial({
+      color,
+      roughness: opts.roughness ?? 0.42,
+      metalness: opts.metalness ?? 0.02,
+      transparent: opts.transparent ?? false,
+      opacity: opts.opacity ?? 1,
+      emissive: opts.emissive ?? 0x000000,
+      emissiveIntensity: opts.emissiveIntensity ?? 0,
+      clearcoat: opts.clearcoat ?? 0,
+      clearcoatRoughness: opts.clearcoatRoughness ?? 0.3
+    });
+  }
+
+  const mats = {
+    topBun: material(0xd48735, { roughness: 0.48, clearcoat: 0.1 }),
+    cutBun: material(0xf1bd72, { roughness: 0.52 }),
+    patty: material(0x4b2113, { roughness: 0.36, clearcoat: 0.18 }),
+    char: material(0x1f100b, { roughness: 0.58 }),
+    cheese: material(0xffc946, { roughness: 0.2, clearcoat: 0.5, clearcoatRoughness: 0.08 }),
+    tomato: material(0xd83c2e, { roughness: 0.24, clearcoat: 0.42, clearcoatRoughness: 0.1 }),
+    lettuce: material(0x4aa647, { roughness: 0.62 }),
+    onion: material(0xf7e0d8, { roughness: 0.36, transparent: true, opacity: 0.82 }),
+    sauce: material(0x9f1810, { roughness: 0.14, clearcoat: 0.9, clearcoatRoughness: 0.04 }),
+    fry: material(0xf3b84f, { roughness: 0.44, clearcoat: 0.12 }),
+    herb: material(0x5fbd54, { roughness: 0.58 }),
+    sesame: material(0xffefd1, { roughness: 0.68 }),
+    steam: new THREE.MeshBasicMaterial({ color: 0xfff2dc, transparent: true, opacity: 0.06, depthWrite: false })
+  };
+
+  function addMesh(parent, geometry, mat, pos = [0, 0, 0], scale = [1, 1, 1], rot = [0, 0, 0]) {
+    const m = new THREE.Mesh(geometry, mat);
+    m.position.set(pos[0], pos[1], pos[2]);
+    m.scale.set(scale[0], scale[1], scale[2]);
+    m.rotation.set(rot[0], rot[1], rot[2]);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    parent.add(m);
+    return m;
+  }
+
+  function makeDisc(radius, height, mat, scaleZ = 0.78, segments = 80) {
+    const g = new THREE.Group();
+    addMesh(g, new THREE.CylinderBufferGeometry(radius, radius * 1.02, height, segments), mat, [0, 0, 0], [1, 1, scaleZ]);
+    return g;
+  }
+
+  function makeTopBun() {
+    const g = new THREE.Group();
+    addMesh(g, new THREE.SphereBufferGeometry(0.72, 72, 28, 0, Math.PI * 2, 0, Math.PI / 2), mats.topBun, [0, 0.02, 0], [1, 0.42, 0.78]);
+    addMesh(g, new THREE.CylinderBufferGeometry(0.69, 0.72, 0.12, 80), mats.cutBun, [0, -0.2, 0], [1, 1, 0.78]);
+    for (let i = 0; i < 34; i++) {
+      const a = i * 2.399963;
+      const r = 0.1 + (i % 9) * 0.058;
+      const x = Math.cos(a) * r;
+      const z = Math.sin(a) * r * 0.55;
+      const y = 0.29 + Math.sin(i * 1.7) * 0.018;
+      addMesh(g, new THREE.SphereBufferGeometry(0.018, 10, 8), mats.sesame, [x, y, z], [1, 0.42, 0.72], [0, a, 0]);
+    }
+    return g;
+  }
+
+  function makeCheese() {
+    const g = new THREE.Group();
+    addMesh(g, new THREE.BoxBufferGeometry(1.23, 0.055, 0.9), mats.cheese, [0, 0, 0], [1, 1, 1], [0, 0.16, 0.06]);
+    addMesh(g, new THREE.SphereBufferGeometry(0.11, 20, 10), mats.cheese, [-0.52, -0.045, 0.34], [1.0, 0.26, 0.78]);
+    addMesh(g, new THREE.SphereBufferGeometry(0.085, 18, 10), mats.cheese, [0.38, -0.045, -0.36], [1.0, 0.22, 0.72]);
+    return g;
+  }
+
+  function makeLettuce() {
+    const g = new THREE.Group();
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * Math.PI * 2;
+      addMesh(g, new THREE.SphereBufferGeometry(0.18, 24, 12), mats.lettuce, [Math.cos(a) * 0.48, 0, Math.sin(a) * 0.35], [1.6, 0.18, 0.68], [0, -a, Math.sin(i) * 0.2]);
+    }
+    return g;
+  }
+
+  function makeTomato() {
+    const g = makeDisc(0.59, 0.075, mats.tomato, 0.78);
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2;
+      addMesh(g, new THREE.SphereBufferGeometry(0.052, 16, 8), mats.sauce, [Math.cos(a) * 0.29, 0.045, Math.sin(a) * 0.2], [1, 0.2, 1]);
+    }
+    return g;
+  }
+
+  function makePatty() {
+    const g = makeDisc(0.64, 0.18, mats.patty, 0.82, 88);
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      addMesh(g, new THREE.BoxBufferGeometry(0.18, 0.012, 0.025), mats.char, [Math.cos(a) * 0.3, 0.096, Math.sin(a) * 0.2], [1, 1, 1], [0, -a, 0]);
+    }
+    return g;
+  }
+
+  function makeBottomBun() {
+    const g = new THREE.Group();
+    addMesh(g, new THREE.CylinderBufferGeometry(0.7, 0.66, 0.16, 80), mats.cutBun, [0, 0.08, 0], [1, 1, 0.78]);
+    addMesh(g, new THREE.SphereBufferGeometry(0.68, 72, 18, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mats.topBun, [0, -0.02, 0], [1, 0.28, 0.78]);
+    return g;
+  }
+
+  function makeFriesCluster() {
+    const g = new THREE.Group();
+    for (let i = 0; i < 13; i++) {
+      const a = -0.55 + i * 0.09;
+      addMesh(g, new THREE.BoxBufferGeometry(0.07, 0.82 + (i % 4) * 0.07, 0.07), mats.fry, [(i - 6) * 0.052, 0.03 + (i % 3) * 0.012, Math.sin(i) * 0.07], [1, 1, 1], [0.24 + Math.sin(i) * 0.16, a, -0.12 + Math.cos(i) * 0.12]);
+    }
+    return g;
+  }
+
+  function makeHerbs() {
+    const g = new THREE.Group();
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      addMesh(g, new THREE.SphereBufferGeometry(0.085, 18, 10), mats.herb, [Math.cos(a) * 0.22, Math.sin(i) * 0.025, Math.sin(a) * 0.14], [1.45, 0.34, 0.7], [0, 0, a]);
+    }
+    return g;
+  }
+
+  function makeSauceRibbon(radius, arc) {
+    const g = new THREE.Group();
+    addMesh(g, new THREE.TorusBufferGeometry(radius, 0.018, 12, 96, arc), mats.sauce, [0, 0, 0], [1, 0.75, 1], [Math.PI / 2, 0, 0]);
+    return g;
+  }
+
+  const pieces = [
+    { group: makeTopBun(),    angle: -0.1, radius: 0.9,  y: 0.74, scale: 1.0,  spin: 0.32, startY: 0.42 },
+    { group: makeLettuce(),   angle: 0.72, radius: 1.55, y: 0.38, scale: 1.05, spin: -0.54, startY: 0.18 },
+    { group: makeTomato(),    angle: 1.55, radius: 1.92, y: 0.18, scale: 1.0,  spin: 0.44, startY: 0.06 },
+    { group: makeCheese(),    angle: 2.38, radius: 1.72, y: -0.02, scale: 1.0,  spin: -0.38, startY: -0.08 },
+    { group: makePatty(),     angle: 3.18, radius: 1.36, y: -0.22, scale: 1.0,  spin: 0.28, startY: -0.24 },
+    { group: makeBottomBun(), angle: 4.0,  radius: 0.92, y: -0.58, scale: 1.0,  spin: -0.24, startY: -0.48 },
+    { group: makeFriesCluster(), angle: 4.9, radius: 2.32, y: 0.28, scale: 0.82, spin: 0.62, startY: 0.02 },
+    { group: makeHerbs(),     angle: 5.58, radius: 2.12, y: 0.64, scale: 1.0,  spin: -0.78, startY: 0.14 },
+    { group: makeSauceRibbon(0.46, Math.PI * 1.2), angle: 0.32, radius: 2.02, y: 0.0, scale: 1.0, spin: 0.56, startY: -0.03 },
+    { group: makeSauceRibbon(0.36, Math.PI * 0.92), angle: 2.82, radius: 2.2, y: 0.46, scale: 0.86, spin: -0.5, startY: 0.08 }
+  ];
+
+  pieces.forEach((p) => {
+    p.group.scale.setScalar(p.scale);
+    studio.add(p.group);
+  });
+
+  const steam = [];
+  for (let i = 0; i < 7; i++) {
+    const puff = addMesh(studio, new THREE.SphereBufferGeometry(0.22 + i * 0.012, 22, 12), mats.steam, [0, 0, 0], [1, 0.35, 0.65]);
+    steam.push({ mesh: puff, angle: i * 0.9, height: 0.24 + i * 0.11, radius: 0.18 + i * 0.035 });
+  }
+
+  let rafId = 0;
+  let mouseX = 0;
+  let mouseY = 0;
+  const easing = (t) => t * t * (3 - 2 * t);
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+  const cycleAmount = (phase) => {
+    const open = easing(clamp01((phase - 0.08) / 0.28));
+    const hold = 1 - easing(clamp01((phase - 0.78) / 0.18));
+    return open * hold;
+  };
+
+  function resize() {
+    const rect = stage.getBoundingClientRect();
+    const width = Math.max(1, rect.width);
+    const height = Math.max(1, rect.height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height, false);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function animate() {
+    rafId = requestAnimationFrame(animate);
+    const now = performance.now() * 0.001;
+    const phase = (now % 10.5) / 10.5;
+    const burst = cycleAmount(phase);
+    const slow = now * 0.23;
+    const inertia = Math.sin(clamp01((phase - 0.08) / 0.28) * Math.PI);
+
+    studio.rotation.y = slow * 0.55 + mouseX * 0.12 + burst * 0.22;
+    studio.rotation.x += (mouseY * 0.055 - studio.rotation.x) * 0.045;
+    reflection.rotation.z = -slow * 0.34;
+    reflection.material.opacity = 0.08 + burst * 0.16;
+
+    camera.position.x = Math.sin(slow * 0.72) * (0.62 + burst * 0.72);
+    camera.position.y = 1.04 + Math.sin(slow * 0.42) * 0.1 + burst * 0.1;
+    camera.position.z = 8.0 + Math.cos(slow * 0.65) * 0.22 - burst * 0.98;
+    camera.lookAt(0, 0.04 + burst * 0.16, 0);
+    camera.fov = 30 - burst * 2.2;
+    camera.updateProjectionMatrix();
+
+    renderer.toneMappingExposure = 1.08 + inertia * 0.2;
+    rim.intensity = 4.3 + burst * 1.3;
+    key.intensity = 3.1 + burst * 0.72;
+
+    pieces.forEach((p, i) => {
+      const orbit = p.angle + slow * (0.42 + i * 0.012) + burst * 0.42;
+      const radius = p.radius * burst;
+      const depthCompression = 0.54 + Math.sin(now * 0.28 + i) * 0.025;
+      const hover = Math.sin(now * 0.55 + i * 0.7) * 0.035 * burst;
+      p.group.position.set(
+        Math.cos(orbit) * radius,
+        p.startY * (1 - burst) + p.y * burst + hover,
+        Math.sin(orbit) * radius * depthCompression
+      );
+      p.group.rotation.y = -orbit + Math.PI / 2 + now * p.spin * (0.18 + burst * 0.52);
+      p.group.rotation.x = Math.sin(now * 0.42 + i) * (0.035 + burst * 0.15);
+      p.group.rotation.z = Math.cos(now * 0.36 + i) * (0.025 + burst * 0.12);
+      p.group.scale.setScalar(p.scale * (0.92 + burst * 0.08));
+    });
+
+    steam.forEach((s, i) => {
+      const a = s.angle + slow * 0.28;
+      s.mesh.position.set(Math.cos(a) * s.radius * (0.3 + burst), s.height + burst * 0.3 + Math.sin(now * 0.38 + i) * 0.05, Math.sin(a) * s.radius * 0.45);
+      const scale = 1.0 + Math.sin(now * 0.5 + i) * 0.12;
+      s.mesh.scale.set(scale * 1.45, scale * 0.38, scale * 0.82);
+      s.mesh.material.opacity = 0.018 + burst * 0.045;
+    });
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  stage.addEventListener('pointermove', (e) => {
+    const rect = stage.getBoundingClientRect();
+    mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+  });
+
+  function explode() {}
+  function implode() {}
+  function destroy() {
+    cancelAnimationFrame(rafId);
+    window.removeEventListener('resize', resize);
+    studio.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+        else obj.material.dispose();
+      }
+    });
+    renderer.dispose();
+  }
+  window.addEventListener('beforeunload', destroy, { once: true });
+  return { explode, implode, destroy };
+}
+function initCinematicImageReveal() {
+  const stage = document.getElementById('hero-webgl-stage');
+  const orbit = document.getElementById('menu-orbit');
+  const burger = document.getElementById('hero-burger-core');
+  const cards = Array.from(document.querySelectorAll('.menu-image-card'));
+  const subtitle = document.querySelector('.hero-subtitle');
+  if (subtitle) subtitle.textContent = ' Multi-agent AI orchestration that schedules, tracks, and dispatches every dish — from tandoor to table, in real time.';
+  const reveal = document.getElementById('cinematic-reveal');
+  if (!stage || !orbit || !burger || !cards.length) return null;
+  reveal?.classList.add('css-only');
+  return {
+    explode() {},
+    implode() {},
+    destroy() {}
+  };
+  if (!window.gsap) {
+    reveal?.classList.add('css-only');
+    return {
+      explode() {},
+      implode() {},
+      destroy() {}
+    };
+  }
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const readNumber = (el, prop) => Number.parseFloat(getComputedStyle(el).getPropertyValue(prop)) || 0;
+  let mouseX = 0;
+  let mouseY = 0;
+  let floatTween = null;
+
+  gsap.set(cards, {
+    x: 0,
+    y: 0,
+    z: 0,
+    rotate: (i, el) => readNumber(el, '--start-rot'),
+    rotateX: 0,
+    rotateY: 0,
+    scale: 0.34,
+    opacity: 0,
+    filter: 'blur(10px) saturate(0.7) brightness(0.52)'
+  });
+  gsap.set(burger, { scale: 0.96, rotate: -2, opacity: 0.74 });
+
+  function startFloat() {
+    floatTween?.kill();
+    floatTween = gsap.to(orbit, {
+      rotateY: 7 + mouseX * 4,
+      rotateX: -4 - mouseY * 3,
+      duration: 2.4,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    });
+  }
+
+  const tl = gsap.timeline({
+    repeat: -1,
+    repeatDelay: 0.55,
+    paused: reduce,
+    defaults: { overwrite: true }
+  });
+
+  tl.to(burger, {
+    scale: 1.08,
+    opacity: 0.84,
+    filter: 'saturate(1.02) contrast(1.12) brightness(0.82)',
+    duration: 0.36,
+    ease: 'power3.out'
+  }, 0);
+
+  tl.to(cards, {
+    x: (i, el) => readNumber(el, '--x'),
+    y: (i, el) => readNumber(el, '--y'),
+    rotate: (i, el) => readNumber(el, '--r'),
+    rotateX: (i) => i % 2 ? -7 : 7,
+    rotateY: (i) => i % 2 ? 10 : -10,
+    scale: 1,
+    opacity: 1,
+    filter: 'blur(0px) saturate(1.06) brightness(0.95)',
+    duration: 0.72,
+    stagger: { each: 0.035, from: 'center' },
+    ease: 'expo.out'
+  }, 0.08);
+
+  tl.to(orbit, {
+    rotateZ: 2.6,
+    scale: 1.02,
+    duration: 0.86,
+    ease: 'power3.out'
+  }, 0.08);
+
+  tl.to(cards, {
+    x: (i, el) => readNumber(el, '--x') * 1.04,
+    y: (i, el) => readNumber(el, '--y') * 1.02,
+    rotate: (i, el) => readNumber(el, '--r') + (i % 2 ? 2 : -2),
+    duration: 2.3,
+    ease: 'sine.inOut'
+  }, 0.78);
+
+  tl.to(cards, {
+    x: 0,
+    y: 0,
+    rotate: (i, el) => readNumber(el, '--start-rot'),
+    rotateX: 0,
+    rotateY: 0,
+    scale: 0.34,
+    opacity: 0,
+    filter: 'blur(10px) saturate(0.7) brightness(0.52)',
+    duration: 0.58,
+    stagger: { each: 0.022, from: 'edges' },
+    ease: 'power4.inOut'
+  }, 3.55);
+
+  tl.to(burger, {
+    scale: 0.96,
+    opacity: 0.72,
+    filter: 'saturate(0.96) contrast(1.08) brightness(0.72)',
+    duration: 0.58,
+    ease: 'power4.inOut'
+  }, 3.55);
+
+  if (!reduce) {
+    tl.play(0);
+    startFloat();
+  } else {
+    gsap.set(cards, {
+      x: (i, el) => readNumber(el, '--x'),
+      y: (i, el) => readNumber(el, '--y'),
+      rotate: (i, el) => readNumber(el, '--r'),
+      scale: 1,
+      opacity: 1,
+      filter: 'none'
+    });
+  }
+
+  stage.addEventListener('pointermove', (e) => {
+    const rect = stage.getBoundingClientRect();
+    mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    gsap.to(orbit, {
+      x: mouseX * 10,
+      y: mouseY * 8,
+      rotateY: mouseX * 7,
+      rotateX: -mouseY * 5,
+      duration: 0.55,
+      ease: 'power3.out'
+    });
+  }, { passive: true });
+
+  function explode() {
+    if (reduce) return;
+    tl.restart();
+  }
+
+  function implode() {
+    if (reduce) return;
+    tl.play();
+  }
+
+  stage.addEventListener('click', explode);
+  document.getElementById('hero-primary-cta')?.addEventListener('mouseenter', explode);
+
+  function destroy() {
+    tl.kill();
+    floatTween?.kill();
+  }
+  window.addEventListener('beforeunload', destroy, { once: true });
+  return { explode, implode, destroy };
+}
+
+hero3dApi = initCinematicImageReveal();
 
 function tickClock() {
   document.getElementById('clock').textContent =
@@ -3411,8 +4729,10 @@ function enterLiveDashboard(page = 'dashboard') {
       ? document.querySelector('.nav-orders-btn')
       : null;
   showPage(page, navBtn);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Ensure the page starts at the top after switching modes.
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
+
 
 function scrollToDashboard() {
   enterLiveDashboard('dashboard');

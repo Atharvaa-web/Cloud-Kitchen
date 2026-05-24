@@ -692,7 +692,12 @@ class KitchenHandler(BaseHTTPRequestHandler):
 
         if path == "/":
             try:
-                with open("../frontend/index.html", "rb") as file:
+                # Use path relative to this server.py location so it works regardless of cwd
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                frontend_index = os.path.join(base_dir, "..", "frontend", "index.html")
+                # Debug-friendly absolute path resolution
+                frontend_index = os.path.abspath(frontend_index)
+                with open(frontend_index, "rb") as file:
                     content = file.read()
 
                 self.send_response(200)
@@ -705,9 +710,11 @@ class KitchenHandler(BaseHTTPRequestHandler):
                 return
 
             except Exception as e:
+                # Surface the computed path too for debugging
                 json_response(self, {
                     "error": "Frontend failed",
-                    "detail": str(e)
+                    "detail": str(e),
+                    "frontend_index": frontend_index
                 }, 500)
                 return
 
@@ -720,6 +727,8 @@ class KitchenHandler(BaseHTTPRequestHandler):
                 or path.endswith(".png")
                 or path.endswith(".jpg")
                 or path.endswith(".jpeg")
+                or path.endswith(".webp")
+                or path.endswith(".avif")
                 or path.endswith(".svg")
                 or path.endswith(".ico")
             ):
@@ -742,6 +751,12 @@ class KitchenHandler(BaseHTTPRequestHandler):
 
                 elif path.endswith(".jpg") or path.endswith(".jpeg"):
                     content_type = "image/jpeg"
+
+                elif path.endswith(".webp"):
+                    content_type = "image/webp"
+
+                elif path.endswith(".avif"):
+                    content_type = "image/avif"
 
                 elif path.endswith(".svg"):
                     content_type = "image/svg+xml"
